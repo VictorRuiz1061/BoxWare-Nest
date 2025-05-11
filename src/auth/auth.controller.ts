@@ -1,12 +1,32 @@
 import { Controller, Post, Body, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { CreateUsuarioDto } from '../usuarios/dto/create-usuario.dto';
+import { UsuariosService } from '../usuarios/usuarios.service';
 
 @Controller('')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
   
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usuariosService: UsuariosService
+  ) {}
+
+  @Post('registrar')
+  async registrar(@Body() createUsuarioDto: CreateUsuarioDto) {
+    try {
+      // Puedes ajustar valores por defecto aquí si es necesario
+      const usuario = await this.usuariosService.create(createUsuarioDto);
+      return {
+        message: 'Usuario registrado exitosamente',
+        usuario,
+      };
+    } catch (error) {
+      this.logger.error(`Error en registro: ${error.message}`);
+      throw new BadRequestException('Error al registrar usuario: ' + error.message);
+    }
+  }
 
   @Post('validacion')
   async login(@Body() loginDto: LoginDto) {

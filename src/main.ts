@@ -20,6 +20,6 @@ async function bootstrap() {
     disableErrorMessages: false, // Show detailed error messages
   }));
 
-  await app.listen(process.env.PORT ?? 3002);
+  await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

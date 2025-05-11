@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Usuario } from './entities/usuario.entity';
@@ -19,7 +20,13 @@ export class UsuariosService {
     const rol = await this.rolRepo.findOneBy({ id_rol: dto.rol_id });
     if (!rol) throw new NotFoundException(`Rol con ID ${dto.rol_id} no encontrado`);
 
-    const nuevoUsuario = this.usuarioRepo.create({ ...dto, rol });
+    // Encriptar la contraseña antes de guardar
+    let hashedPassword = dto.contrasena;
+    if (dto.contrasena) {
+      hashedPassword = await bcrypt.hash(dto.contrasena, 10);
+    }
+
+    const nuevoUsuario = this.usuarioRepo.create({ ...dto, contrasena: hashedPassword, rol });
     return this.usuarioRepo.save(nuevoUsuario);
   }
 

@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Usuario } from 'src/usuarios/entities/usuario.entity'; // Asegúrate de que esta entidad exista
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -26,10 +26,9 @@ export class AuthService {
       return null;
     }
 
-    // Si la contraseña no está hasheada, compararla directamente
-    // En producción, deberías usar bcrypt.compare
-    // Nota: Considera implementar bcrypt para mayor seguridad
-    if (usuarios.contrasena !== contrasena) {
+    // Comparar la contraseña ingresada con el hash usando bcryptjs
+    const passwordMatch = await bcrypt.compare(contrasena, usuarios.contrasena);
+    if (!passwordMatch) {
       return null;
     }
 
