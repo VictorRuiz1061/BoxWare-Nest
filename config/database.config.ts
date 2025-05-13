@@ -22,7 +22,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   host: process.env.DB_HOST ?? 'localhost',
   port: parseInt(process.env.DB_PORT ?? '5432'),
   username: process.env.DB_USERNAME ?? 'postgres',
-  password: process.env.DB_PASSWORD ?? '7077',
+  password: process.env.DB_PASSWORD ?? '1065',
   database: process.env.DB_NAME ?? 'boxwareNest',
   entities: [Area, Centro, CategoriaElemento, Ficha, Material, Modulo, Municipio, Permiso, Programa, Rol, Sede, Sitio, TipoMaterial, TipoSitio, TipoMovimiento, Usuario, Movimiento],
   synchronize: true, 

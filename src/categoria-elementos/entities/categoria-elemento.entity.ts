@@ -21,7 +21,6 @@ export class CategoriaElemento {
   @UpdateDateColumn()
   fecha_modificacion: Date;
 
-  @OneToMany(() => Material, material => material.categoria_id)
+  @OneToMany(() => Material, material => material.categoria)
   materiales: Material[];
 }
- 

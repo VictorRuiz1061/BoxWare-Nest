@@ -24,6 +24,6 @@ export class Modulo {
   @CreateDateColumn()
   fecha_creacion: Date;
   
-  @OneToMany(() => Permiso, permiso => permiso.modulo_id)
+  @OneToMany(() => Permiso, permiso => permiso.modulo)
   permisos: Permiso[];
 }

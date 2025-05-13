@@ -23,6 +23,6 @@ export class Area {
   @JoinColumn({ name: 'sede_id' })
   sede: Sede;
 
-  @OneToMany(() => Programa, programa => programa.area_id)
+  @OneToMany(() => Programa, programa => programa.area)
   programas: Programa[];
 }

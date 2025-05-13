@@ -18,7 +18,6 @@ export class TipoMaterial {
   @UpdateDateColumn()
   fecha_modificacion: Date;
 
-  @OneToMany(() => Material, material => material.tipo_material_id)
+  @OneToMany(() => Material, material => material.tipo_material)
   materiales: Material[];
 }
- 

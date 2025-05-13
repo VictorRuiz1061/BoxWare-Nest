@@ -44,16 +44,16 @@ export class Material {
 
   @ManyToOne(() => CategoriaElemento, categoria => categoria.materiales)
   @JoinColumn({ name: 'categoria_id' })
-  categoria_id: CategoriaElemento;
+  categoria: CategoriaElemento;
 
   @ManyToOne(() => TipoMaterial, tipo => tipo.materiales)
   @JoinColumn({ name: 'tipo_material_id' })
-  tipo_material_id: TipoMaterial;
+  tipo_material: TipoMaterial;
 
   @ManyToOne(() => Sitio, sitio => sitio.materiales)
   @JoinColumn({ name: 'sitio_id' })
-  sitio_id: Sitio;
+  sitio: Sitio;
 
-  @OneToMany(() => Movimiento, movimiento => movimiento.material_id)
+  @OneToMany(() => Movimiento, movimiento => movimiento.material)
   movimientos: Movimiento[];
 }

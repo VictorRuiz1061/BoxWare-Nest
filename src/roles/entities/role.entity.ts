@@ -25,6 +25,6 @@ export class Rol {
   @OneToMany(() => Usuario, usuario => usuario.rol)
   usuarios: Usuario[];
 
-  @OneToMany(() => Permiso, permiso => permiso.rol_id)
+  @OneToMany(() => Permiso, permiso => permiso.rol)
   permisos: Permiso[];
 }

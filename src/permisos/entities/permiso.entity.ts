@@ -21,9 +21,9 @@ export class Permiso {
 
   @ManyToOne(() => Modulo, modulo => modulo.permisos)
   @JoinColumn({ name: 'modulo_id' })
-  modulo_id: Modulo;
+  modulo: Modulo;
 
   @ManyToOne(() => Rol, rol => rol.permisos)
   @JoinColumn({ name: 'rol_id' })
-  rol_id: Rol;
+  rol: Rol;
 }

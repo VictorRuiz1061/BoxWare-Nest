@@ -22,5 +22,5 @@ export class Ficha {
 
   @ManyToOne(() => Programa, programa => programa.fichas)
   @JoinColumn({ name: 'programa_id' })
-  programa_id: Programa;
+  programa: Programa;
 } 

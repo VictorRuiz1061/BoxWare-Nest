@@ -27,6 +27,5 @@ export class Sede {
   centro: Centro;
 
   @OneToMany(() => Area, area => area.sede)
-  @JoinColumn({ name: 'sede_id' })
   areas: Area[];
 }

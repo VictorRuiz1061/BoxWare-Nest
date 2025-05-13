@@ -40,7 +40,7 @@ export class AuthService {
       userId: usuarios.id_usuario,
       nombre: usuarios.nombre,
       email: usuarios.email,
-      rol: usuarios.rol_id,
+      rol: usuarios.rol?.id_rol,
     };
 
     return {
@@ -49,7 +49,7 @@ export class AuthService {
         id_usuario: usuarios.id_usuario,
         nombre: usuarios.nombre,
         email: usuarios.email,
-        rol_id: usuarios.rol_id
+        rol_id: usuarios.rol?.id_rol
       }
     };
   }

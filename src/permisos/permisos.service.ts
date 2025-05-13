@@ -33,8 +33,8 @@ export class PermisoService {
     const permiso = this.permisoRepository.create({
       nombre: createPermisoDto.nombre,
       codigo_nombre: createPermisoDto.codigo_nombre,
-      modulo_id: modulo,
-      rol_id: rol,
+      modulo: modulo,
+      rol: rol,
     });
 
     return this.permisoRepository.save(permiso);
@@ -69,13 +69,13 @@ export class PermisoService {
     if (updatePermisoDto.modulo) {
       const modulo = await this.moduloRepository.findOneBy({ id_modulo: Number(updatePermisoDto.modulo )});
       if (!modulo) throw new NotFoundException(`Modulo con ID ${updatePermisoDto.modulo} no encontrado`);
-      permiso.modulo_id = modulo;
+      permiso.modulo = modulo;
     }
 
     if (updatePermisoDto.rol) {
       const rol = await this.rolRepository.findOneBy({ id_rol:Number( updatePermisoDto.rol) });
       if (!rol) throw new NotFoundException(`Rol con ID ${updatePermisoDto.rol} no encontrado`);
-      permiso.rol_id = rol;
+      permiso.rol = rol;
     }
 
     permiso.nombre = updatePermisoDto.nombre ?? permiso.nombre;

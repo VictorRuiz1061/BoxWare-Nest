@@ -18,7 +18,6 @@ export class TipoMovimiento {
   @UpdateDateColumn()
   fecha_modificacion: Date;
 
-  @OneToMany(() => Movimiento, movimiento => movimiento.tipo_movimiento_id)
+  @OneToMany(() => Movimiento, movimiento => movimiento.tipo_movimiento)
   movimientos: Movimiento[];
 }
- 

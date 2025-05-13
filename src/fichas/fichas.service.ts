@@ -27,7 +27,7 @@ export class FichasService {
 
     const ficha = this.fichaRepository.create({
       ...rest,
-      programa_id: programaEntity, // Asocia el objeto Programa completo
+      programa: programaEntity, // Asocia el objeto Programa completo
     });
 
     return this.fichaRepository.save(ficha);

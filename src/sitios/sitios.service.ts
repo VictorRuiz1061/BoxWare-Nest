@@ -27,7 +27,7 @@ export class SitioService {
     // Crear el nuevo Sitio, asignando la entidad completa a la relación
     const nuevo = this.sitioRepo.create({
       ...dto,
-      tipo_sitio_id: tipoSitio,  // Asignamos el objeto TipoSitio completo
+      tipo_sitio: tipoSitio,  // Asignamos el objeto TipoSitio completo
     });
 
     return this.sitioRepo.save(nuevo);

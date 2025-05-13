@@ -23,9 +23,9 @@ export class Movimiento {
 
   @ManyToOne(() => TipoMovimiento, tipo => tipo.movimientos)
   @JoinColumn({ name: 'tipo_movimiento_id' })
-  tipo_movimiento_id: TipoMovimiento;
+  tipo_movimiento: TipoMovimiento;
 
   @ManyToOne(() => Material, material => material.movimientos, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'material_id' })
-  material_id: Material;
+  material: Material;
 }

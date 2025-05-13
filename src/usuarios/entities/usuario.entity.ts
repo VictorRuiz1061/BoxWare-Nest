@@ -35,9 +35,6 @@ export class Usuario {
   @CreateDateColumn()
   fecha_registro: Date;
 
-  @Column({ name: 'rol_id' })
-  rol_id: number;
-
   @ManyToOne(() => Rol, rol => rol.usuarios)
   @JoinColumn({ name: 'rol_id' })
   rol: Rol;

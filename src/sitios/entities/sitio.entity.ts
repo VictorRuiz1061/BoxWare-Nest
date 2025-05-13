@@ -28,9 +28,8 @@ export class Sitio {
 
   @ManyToOne(() => TipoSitio, tipo => tipo.sitios)
   @JoinColumn({ name: 'tipo_sitio_id' })
-  tipo_sitio_id: TipoSitio;
+  tipo_sitio: TipoSitio;
 
-  @OneToMany(() => Material, material => material.sitio_id)
+  @OneToMany(() => Material, material => material.sitio)
   materiales: Material[];
 }
- 
