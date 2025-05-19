@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
 import { SedesService } from './sedes.service';
 import { CreateSedeDto } from './dto/create-sede.dto';
 import { UpdateSedeDto } from './dto/update-sede.dto';
@@ -17,13 +17,13 @@ export class SedesController {
   findAll() {
     return this.sedesService.findAll();
   }
-
+z
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.sedesService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateSedeDto: UpdateSedeDto) {
     return this.sedesService.update(+id, updateSedeDto);
   }

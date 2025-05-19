@@ -14,16 +14,16 @@ export class SedesService {
   ) {}
 
   async create(createSedeDto: CreateSedeDto) {
-    const { centroId, ...rest } = createSedeDto;
+    const { centro_id, ...rest } = createSedeDto;
 
     console.log('Datos recibidos:', createSedeDto);
 
-    const centro = centroId
-      ? await this.sedeRepository.manager.findOne(Centro, { where: { id_centro: centroId } })
+    const centro = centro_id
+      ? await this.sedeRepository.manager.findOne(Centro, { where: { id_centro: centro_id } })
       : null;
 
-    if (centroId && !centro) {
-      throw new NotFoundException(`Centro with ID ${centroId} not found`);
+    if (centro_id && !centro) {
+      throw new NotFoundException(`Centro with ID ${centro_id} not found`);
     }
 
     const sede = this.sedeRepository.create({
@@ -56,15 +56,15 @@ export class SedesService {
   }
 
   async update(id: number, updateSedeDto: UpdateSedeDto) {
-    const { centroId, ...rest } = updateSedeDto;
+    const { centro_id, ...rest } = updateSedeDto;
 
     const sede = await this.findOne(id);
 
     let centro: Centro | null = null;
-    if (centroId) {
-      centro = await this.sedeRepository.manager.findOne(Centro, { where: { id_centro: centroId } });
+    if (centro_id) {
+      centro = await this.sedeRepository.manager.findOne(Centro, { where: { id_centro: centro_id } });
       if (!centro) {
-        throw new NotFoundException(`Centro with ID ${centroId} not found`);
+        throw new NotFoundException(`Centro with ID ${centro_id} not found`);
       }
     }
 

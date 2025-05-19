@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
 import { TiposMovimientoService } from './tipos-movimientos.service';
 import { CreateTiposMovimientoDto } from './dto/create-tipos-movimiento.dto';
 import { UpdateTiposMovimientoDto } from './dto/update-tipos-movimiento.dto';
@@ -22,7 +22,7 @@ export class TiposMovimientosController {
     return this.tiposMovimientosService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateTiposMovimientoDto: UpdateTiposMovimientoDto) {
     return this.tiposMovimientosService.update(+id, updateTiposMovimientoDto);
   }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
 import { TipoMaterialService } from './tipo-materiales.service';
 import { CreateTipoMaterialeDto } from './dto/create-tipo-materiale.dto';
 import { UpdateTipoMaterialeDto } from './dto/update-tipo-materiale.dto';
@@ -22,7 +22,7 @@ export class TipoMaterialesController {
     return this.tipoMaterialesService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateTipoMaterialeDto: UpdateTipoMaterialeDto) {
     return this.tipoMaterialesService.update(+id, updateTipoMaterialeDto);
   }

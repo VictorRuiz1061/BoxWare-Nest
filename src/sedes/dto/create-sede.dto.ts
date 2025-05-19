@@ -17,13 +17,13 @@ export class CreateSedeDto {
 
   @IsNotEmpty()
   @IsString()
-  fecha_creacion: Date;
+  fecha_creacion: string;
 
   @IsNotEmpty()
   @IsString()
-  fecha_modificacion: Date;
+  fecha_modificacion: string;
 
   @IsOptional()
   @IsNumber()
-  centroId?: number;
+  centro_id?: number;
 }

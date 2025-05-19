@@ -12,12 +12,12 @@ export class CreatePermisoDto {
 
   @IsNotEmpty()
   @IsNumber()
-  modulo: number;
+  modulo_id: number;
 
   @IsNotEmpty()
   @IsNumber()
-  rol: number;
-
+  rol_id: number;
+  
   @IsNotEmpty()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true || value === 1) // Convierte 1 o "true" a booleano

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
 import { CategoriaElementoService } from './categoria-elementos.service';
 import { CreateCategoriaElementoDto } from './dto/create-categoria-elemento.dto';
 import { UpdateCategoriaElementoDto } from './dto/update-categoria-elemento.dto';
@@ -22,7 +22,7 @@ export class CategoriaElementosController {
     return this.categoriaElementosService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateCategoriaElementoDto: UpdateCategoriaElementoDto) {
     return this.categoriaElementosService.update(+id, updateCategoriaElementoDto);
   }

@@ -19,15 +19,15 @@ export class PermisoService {
   ) {}
 
   async create(createPermisoDto: CreatePermisoDto): Promise<Permiso> {
-    const modulo = await this.moduloRepository.findOneBy({ id_modulo: Number(createPermisoDto.modulo) });
-    const rol = await this.rolRepository.findOneBy({ id_rol:Number( createPermisoDto.rol )});
+    const modulo = await this.moduloRepository.findOneBy({ id_modulo: Number(createPermisoDto.modulo_id) });
+    const rol = await this.rolRepository.findOneBy({ id_rol: Number(createPermisoDto.rol_id) });
 
     if (!modulo) {
-      throw new NotFoundException(`Modulo con ID ${createPermisoDto.modulo} no encontrado`);
+      throw new NotFoundException(`Modulo con ID ${createPermisoDto.modulo_id} no encontrado`);
     }
 
     if (!rol) {
-      throw new NotFoundException(`Rol con ID ${createPermisoDto.rol} no encontrado`);
+      throw new NotFoundException(`Rol con ID ${createPermisoDto.rol_id} no encontrado`);
     }
 
     const permiso = this.permisoRepository.create({
@@ -42,14 +42,14 @@ export class PermisoService {
 
   async findAll(): Promise<Permiso[]> {
     return this.permisoRepository.find({
-      relations: ['modulo', 'rol'],
+      relations: ['modulo_id', 'rol_id'],
     });
   }
 
   async findOne(id: number): Promise<Permiso> {
     const permiso = await this.permisoRepository.findOne({
       where: { id_permiso: id },
-      relations: ['modulo', 'rol'],
+      relations: ['modulo_id', 'rol_id'],
     });
 
     if (!permiso) {
@@ -66,15 +66,15 @@ export class PermisoService {
       throw new NotFoundException(`Permiso con ID ${id} no encontrado`);
     }
 
-    if (updatePermisoDto.modulo) {
-      const modulo = await this.moduloRepository.findOneBy({ id_modulo: Number(updatePermisoDto.modulo )});
-      if (!modulo) throw new NotFoundException(`Modulo con ID ${updatePermisoDto.modulo} no encontrado`);
+    if (updatePermisoDto.modulo_id) {
+      const modulo = await this.moduloRepository.findOneBy({ id_modulo: Number(updatePermisoDto.modulo_id) });
+      if (!modulo) throw new NotFoundException(`Modulo con ID ${updatePermisoDto.modulo_id} no encontrado`);
       permiso.modulo_id = modulo;
     }
 
-    if (updatePermisoDto.rol) {
-      const rol = await this.rolRepository.findOneBy({ id_rol:Number( updatePermisoDto.rol) });
-      if (!rol) throw new NotFoundException(`Rol con ID ${updatePermisoDto.rol} no encontrado`);
+    if (updatePermisoDto.rol_id) {
+      const rol = await this.rolRepository.findOneBy({ id_rol: Number(updatePermisoDto.rol_id) });
+      if (!rol) throw new NotFoundException(`Rol con ID ${updatePermisoDto.rol_id} no encontrado`);
       permiso.rol_id = rol;
     }
 

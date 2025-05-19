@@ -21,6 +21,10 @@ export class CreateFichaDto {
 
   @IsNotEmpty()
   @IsNumber()
-  programa: number;
+  programa_id: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  usuario_id: number;
 }
 
