@@ -66,13 +66,13 @@ docker-compose up -d
 ## Para mayor información consulta 😁
 ---
 
-- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/anthropic.svg" width="20" style="vertical-align:middle" /> [Claude AI](https://claude.ai/new)
-- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/microsoft.svg" width="20" style="vertical-align:middle" /> [Copilot Chat](https://copilot.microsoft.com/chats/JqFR2EX9JAsbUbFFRwYd4)
-- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/openai.svg" width="20" style="vertical-align:middle" /> [ChatGPT](https://chatgpt.com/)
-- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/phind.svg" width="20" style="vertical-align:middle" /> [Phind](https://www.phind.com/)
-- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/google.svg" width="20" style="vertical-align:middle" /> [Gemini](https://gemini.google.com/app?hl=es)
-- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/perplexity.svg" width="20" style="vertical-align:middle" /> [Perplexity](https://www.perplexity.ai/)
-- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/blackbox.svg" width="20" style="vertical-align:middle" /> [Blackbox](https://www.blackbox.ai/)
+- [Claude AI](https://claude.ai/new)
+- [Copilot Chat](https://copilot.microsoft.com/chats/JqFR2EX9JAsbUbFFRwYd4)
+- [ChatGPT](https://chatgpt.com/)
+- [Phind](https://www.phind.com/)
+- [Gemini](https://gemini.google.com/app?hl=es)
+- [Perplexity](https://www.perplexity.ai/)
+- [Blackbox](https://www.blackbox.ai/)
 
 ---
 
