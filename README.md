@@ -63,15 +63,16 @@ docker-compose up -d
 | Modo observador       | `npm run start:dev`     |
 ---
 
-## Para mayor imformación consulta😁
+## Para mayor información consulta 😁
 ---
-| (https://claude.ai/new) |
-| (https://copilot.microsoft.com/chats/JqFR2EX9JAsbUbFFRwYd4) |
-| (https://chatgpt.com/) |
-| (https://www.phind.com/)|
-| (https://gemini.google.com/app?hl=es)|
-| (https://www.perplexity.ai/)|
-| (https://www.blackbox.ai/)|
+
+- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/anthropic.svg" width="20" style="vertical-align:middle" /> [Claude AI](https://claude.ai/new)
+- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/microsoft.svg" width="20" style="vertical-align:middle" /> [Copilot Chat](https://copilot.microsoft.com/chats/JqFR2EX9JAsbUbFFRwYd4)
+- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/openai.svg" width="20" style="vertical-align:middle" /> [ChatGPT](https://chatgpt.com/)
+- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/phind.svg" width="20" style="vertical-align:middle" /> [Phind](https://www.phind.com/)
+- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/google.svg" width="20" style="vertical-align:middle" /> [Gemini](https://gemini.google.com/app?hl=es)
+- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/perplexity.svg" width="20" style="vertical-align:middle" /> [Perplexity](https://www.perplexity.ai/)
+- <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/blackbox.svg" width="20" style="vertical-align:middle" /> [Blackbox](https://www.blackbox.ai/)
 
 ---
 
