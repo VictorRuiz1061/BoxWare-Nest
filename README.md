@@ -65,13 +65,13 @@ docker-compose up -d
 
 ## Para mayor imformación consulta😁
 ---
-(https://claude.ai/new) 
-(https://copilot.microsoft.com/chats/JqFR2EX9JAsbUbFFRwYd4) 
-(https://chatgpt.com/) 
-(https://www.phind.com/)
-(https://gemini.google.com/app?hl=es)
-(https://www.perplexity.ai/)
-(https://www.blackbox.ai/)
+| (https://claude.ai/new) |
+| (https://copilot.microsoft.com/chats/JqFR2EX9JAsbUbFFRwYd4) |
+| (https://chatgpt.com/) |
+| (https://www.phind.com/)|
+| (https://gemini.google.com/app?hl=es)|
+| (https://www.perplexity.ai/)|
+| (https://www.blackbox.ai/)|
 
 ---
 
