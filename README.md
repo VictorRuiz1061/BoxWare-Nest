@@ -61,8 +61,17 @@ docker-compose up -d
 |-----------------------|-------------------------|
 | Iniciar desarrollo    | `npm run start`         |
 | Modo observador       | `npm run start:dev`     |
-| Producción            | `npm run start:prod`    |
+---
 
+## Para mayor imformación consulta😁
+---
+(https://claude.ai/new) 
+(https://copilot.microsoft.com/chats/JqFR2EX9JAsbUbFFRwYd4) 
+(https://chatgpt.com/) 
+(https://www.phind.com/)
+(https://gemini.google.com/app?hl=es)
+(https://www.perplexity.ai/)
+(https://www.blackbox.ai/)
 
 ---
 
