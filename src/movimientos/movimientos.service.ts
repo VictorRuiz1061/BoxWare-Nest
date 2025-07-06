@@ -33,10 +33,9 @@ export class MovimientosService {
   private esMovimientoEntrada(tipoMovimiento: TipoMovimiento): boolean {
     const tipoNombre = tipoMovimiento.tipo_movimiento.toLowerCase();
     return tipoNombre.includes('entrada') || 
-    tipoNombre.includes('egreso') || 
-    tipoNombre.includes('retiro') ||
-    tipoNombre.includes('prestamo');
-}
+           tipoNombre.includes('devolucion') || 
+           tipoNombre.includes('ingreso');
+  }
   
   /**
    * Determina si un tipo de movimiento es una salida de material
@@ -47,7 +46,8 @@ export class MovimientosService {
     const tipoNombre = tipoMovimiento.tipo_movimiento.toLowerCase();
     return tipoNombre.includes('salida') || 
            tipoNombre.includes('egreso') || 
-           tipoNombre.includes('retiro');
+           tipoNombre.includes('retiro') ||
+           tipoNombre.includes('prestamo');
   }
   
   /**
@@ -64,11 +64,13 @@ export class MovimientosService {
     cantidad: number,
     sitioId: number
   ): Promise<boolean> {
-    if (this.esMovimientoEntrada(tipoMovimiento)) {
-      // Para movimientos de entrada, aumentar el stock
+    const tipoNombre = tipoMovimiento.tipo_movimiento.toLowerCase();
+    
+    if (tipoNombre.includes('devolucion') || tipoNombre.includes('ingreso')) {
+      // Para movimientos de entrada (devolución, ingreso), aumentar el stock
       return await this.inventarioManager.registrarDevolucion(material.id_material, sitioId, cantidad);
-    } else if (this.esMovimientoSalida(tipoMovimiento)) {
-      // Para movimientos de salida, disminuir el stock
+    } else if (tipoNombre.includes('salida') || tipoNombre.includes('prestamo') || tipoNombre.includes('egreso') || tipoNombre.includes('retiro')) {
+      // Para movimientos de salida (préstamo, salida, egreso, retiro), disminuir el stock
       return await this.inventarioManager.registrarPrestamo(material.id_material, sitioId, cantidad);
     } else {
       // Si no es entrada ni salida, lanzar error
@@ -90,10 +92,12 @@ export class MovimientosService {
     cantidad: number,
     sitioId: number
   ): Promise<boolean> {
-    if (this.esMovimientoEntrada(tipoMovimiento)) {
+    const tipoNombre = tipoMovimiento.tipo_movimiento.toLowerCase();
+    
+    if (tipoNombre.includes('devolucion') || tipoNombre.includes('ingreso')) {
       // Revertir entrada: decrementar stock (registrar préstamo)
       return await this.inventarioManager.registrarPrestamo(material.id_material, sitioId, cantidad);
-    } else if (this.esMovimientoSalida(tipoMovimiento)) {
+    } else if (tipoNombre.includes('salida') || tipoNombre.includes('prestamo') || tipoNombre.includes('egreso') || tipoNombre.includes('retiro')) {
       // Revertir salida: incrementar stock (registrar devolución)
       return await this.inventarioManager.registrarDevolucion(material.id_material, sitioId, cantidad);
     }
