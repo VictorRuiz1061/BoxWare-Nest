@@ -7,12 +7,8 @@ export class CreatePermisoDto {
   nombre: string;
 
   @IsNotEmpty()
-  @IsString()
-  codigo_nombre: string;
-
-  @IsNotEmpty()
   @IsNumber()
-  modulo_id: number; // Usamos "_id" para claridad
+  modulo_id: number;
 
   @IsNotEmpty()
   @IsNumber()

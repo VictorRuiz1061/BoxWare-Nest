@@ -1,12 +1,12 @@
-import { IsInt, IsNotEmpty, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsNotEmpty, IsPositive } from 'class-validator';
 
 export class CreateCaracteristicaDto {
   @IsNotEmpty()
-  @IsString()
+  @IsBoolean()
   placa_sena: boolean;
 
   @IsNotEmpty()
-  @IsString()
+  @IsBoolean()
   descripcion: boolean;
 
   @IsNotEmpty()

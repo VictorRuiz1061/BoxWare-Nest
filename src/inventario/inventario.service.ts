@@ -5,7 +5,6 @@ import { CreateInventarioDto } from './dto/create-inventario.dto';
 import { UpdateInventarioDto } from './dto/update-inventario.dto';
 import { Inventario } from './entities/inventario.entity';
 import { Sitio } from '../sitios/entities/sitio.entity';
-import { Caracteristica } from '../caracteristicas/entities/caracteristica.entity'; // Importa la entidad Caracteristica
 
 @Injectable()
 export class InventarioService {
@@ -13,39 +12,23 @@ export class InventarioService {
     @InjectRepository(Inventario)
     private readonly inventarioRepo: Repository<Inventario>,
     @InjectRepository(Sitio)
-    private readonly sitioRepo: Repository<Sitio>,
-    @InjectRepository(Caracteristica)
-    private readonly caracteristicaRepo: Repository<Caracteristica>, // Inyecta el repositorio
+    private readonly sitioRepo: Repository<Sitio>
   ) {}
 
   async create(createInventarioDto: CreateInventarioDto): Promise<Inventario> {
-  const { sitio_id, material_id, stock, placa_sena, descripcion } = createInventarioDto;
+  const { sitio_id, stock, placa_sena, descripcion } = createInventarioDto;
 
   const sitio = await this.sitioRepo.findOneBy({ id_sitio: sitio_id });
   if (!sitio) throw new NotFoundException(`Sitio con ID ${sitio_id} no encontrado`);
 
-  // Traer las características del material
-  const caracteristica = await this.caracteristicaRepo.findOne({
-    where: { material: { id_material: material_id } },
-    relations: ['material'],
-  });
-
-  if (!caracteristica) throw new NotFoundException(`Características para el material ${material_id} no encontradas`);
-
   const inventario = this.inventarioRepo.create({ sitio, stock });
 
-  // Validar si se requiere cada dato y si se recibió
-  if (caracteristica.placa_sena) {
-    if (!placa_sena) {
-      throw new BadRequestException(`Se requiere el valor de "placa_sena" para este material`);
-    }
+  // Asignar valores opcionales si se proporcionan
+  if (placa_sena) {
     inventario.placa_sena = placa_sena;
   }
 
-  if (caracteristica.descripcion) {
-    if (!descripcion) {
-      throw new BadRequestException(`Se requiere la "descripcion" para este material`);
-    }
+  if (descripcion) {
     inventario.descripcion = descripcion;
   }
 

@@ -13,6 +13,7 @@ export class CreateSitioDto {
   @IsNotEmpty()
   @IsString()
   ficha_tecnica: string;
+  
   @IsNotEmpty()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true || value === 1) // Convierte 1 o "true" a booleano

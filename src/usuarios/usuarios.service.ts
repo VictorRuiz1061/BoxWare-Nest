@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -19,7 +19,21 @@ export class UsuariosService {
 
   async create(dto: CreateUsuarioDto): Promise<Usuario> {
     const rol = await this.rolRepo.findOneBy({ id_rol: dto.rol_id });
-    if (!rol) throw new NotFoundException(`Rol con ID ${dto.rol_id} no encontrado`);
+    if (!rol) {
+      throw new NotFoundException(`Rol con ID ${dto.rol_id} no encontrado`);
+    }
+
+    // 🔍 Verifica si ya existe por cédula
+    const existeCedula = await this.usuarioRepo.findOneBy({ cedula: dto.cedula });
+    if (existeCedula) {
+      throw new BadRequestException(`Ya existe un usuario con la cédula ${dto.cedula}`);
+    }
+
+    // 🔍 Verifica si ya existe por email
+    const existeEmail = await this.usuarioRepo.findOneBy({ email: dto.email });
+    if (existeEmail) {
+      throw new BadRequestException(`Ya existe un usuario con el correo ${dto.email}`);
+    }
 
     let hashedPassword = dto.contrasena;
     if (dto.contrasena) {
@@ -63,7 +77,9 @@ export class UsuariosService {
 
     if (rol_id) {
       const rol = await this.rolRepo.findOneBy({ id_rol: rol_id });
-      if (!rol) throw new NotFoundException(`Rol con ID ${rol_id} no encontrado`);
+      if (!rol) {
+        throw new NotFoundException(`Rol con ID ${rol_id} no encontrado`);
+      }
       usuario.rol = rol;
     }
 
@@ -78,7 +94,15 @@ export class UsuariosService {
 
   async remove(id: number | string): Promise<boolean> {
     const usuario = await this.findOne(id);
-    await this.usuarioRepo.save(usuario);
+    await this.usuarioRepo.remove(usuario);
     return true;
+  }
+
+  async findByCedula(cedula: string): Promise<Usuario | null> {
+    return this.usuarioRepo.findOneBy({ cedula });
+  }
+
+  async findByEmail(email: string): Promise<Usuario | null> {
+    return this.usuarioRepo.findOneBy({ email });
   }
 }

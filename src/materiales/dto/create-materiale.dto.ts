@@ -15,15 +15,10 @@ export class CreateMaterialeDto {
     descripcion_material: string;
 
     @IsNotEmpty()
-    @IsNumber()
-    @Type(() => Number)
-    stock: number;
-
-    @IsNotEmpty()
     @IsString()
     unidad_medida: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsDateString()
     fecha_vencimiento: string;
 
@@ -49,9 +44,4 @@ export class CreateMaterialeDto {
     @IsNumber()
     @Type(() => Number)
     tipo_material_id: number;
-
-    @IsNotEmpty()
-    @IsNumber()
-    @Type(() => Number)
-    sitio_id: number;
 }

@@ -17,10 +17,13 @@ export class CreateFichaDto {
 
   @IsNotEmpty()
   @IsString()
-  fecha_modificacion: string;
+  fecha_modificacion: string; 
 
   @IsNotEmpty()
   @IsNumber()
-  programa: number;
-}
+  usuario_id: number;
 
+  @IsNotEmpty()
+  @IsNumber()
+  programa_id: number;
+}

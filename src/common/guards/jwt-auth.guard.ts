@@ -13,6 +13,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   private readonly publicRoutes = [
     '/validacion',  // Ruta de login
     '/registrar',   // Ruta de registro
+    '/recuperar',       // Ruta de recuperación de contraseña
+    '/verificar-codigo', // Ruta de verificación de código
+    '/restablecer',     // Ruta de restablecimiento de contraseña
   ];
 
   /**

@@ -1,17 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Put,
-  Param,
-  Delete,
-  UseInterceptors,
-  UploadedFile,
-  ParseIntPipe,
-  BadRequestException,
-  UseGuards
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete,
+  UseInterceptors, UploadedFile, BadRequestException, UseGuards } from '@nestjs/common';
 import { MaterialesService } from './materiales.service';
 import { CreateMaterialeDto } from './dto/create-materiale.dto';
 import { UpdateMaterialeDto } from './dto/update-materiale.dto';
@@ -80,5 +68,31 @@ export class MaterialesController {
   @RequirePermiso('materiales', 'actualizar')
   remove(@Param('id') id: string) {
     return this.materialesService.remove(+id);
+  }
+
+  /**
+   * Endpoint para actualizar el stock de un material
+   * @param id ID del material
+   * @param datos Datos para actualizar el stock
+   * @returns Resultado de la operación
+   */
+  @Post(':id/actualizar-stock')
+  @RequirePermiso('materiales', 'actualizar')
+  actualizarStock(
+    @Param('id') id: string, 
+    @Body() datos: {
+      sitio_id: number;
+      cantidad: number;
+      placa_sena?: string;
+      descripcion?: string;
+    }
+  ) {
+    return this.materialesService.actualizarStockMaterial(
+      +id, 
+      datos.sitio_id, 
+      datos.cantidad,
+      datos.placa_sena,
+      datos.descripcion
+    );
   }
 }

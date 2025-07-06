@@ -14,9 +14,17 @@ export class InventarioManagerService {
    * @param materialId ID del material
    * @param sitioId ID del sitio
    * @param cantidad Cantidad a añadir (positiva) o restar (negativa)
+   * @param placaSena Placa SENA del material (opcional)
+   * @param descripcion Descripción adicional (opcional)
    * @returns true si la operación fue exitosa, false en caso contrario
    */
-  async actualizarStock(materialId: number, sitioId: number, cantidad: number): Promise<boolean> {
+  async actualizarStock(
+    materialId: number, 
+    sitioId: number, 
+    cantidad: number, 
+    placaSena?: string, 
+    descripcion?: string
+  ): Promise<boolean> {
     try {
       await this.inventarioService.actualizarStock(sitioId, cantidad);
       return true;

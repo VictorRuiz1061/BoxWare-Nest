@@ -17,7 +17,7 @@ import { CategoriaElementosModule } from './categoria-elementos/categoria-elemen
 import { TipoMaterialesModule } from './tipo-materiales/tipo-materiales.module';
 import { MaterialesModule } from './materiales/materiales.module';
 import { AuthModule } from './auth/auth.module';
-import { InformesModule } from './informes/informes.module';
+// import { InformesModule } from './informes/informes.module';
 import { SeedModule } from './seeds/permisos/seed.module';
 
 // Importar módulos comunes
@@ -60,7 +60,7 @@ import { InventarioModule } from './inventario/inventario.module';
     TipoMaterialesModule, 
     MaterialesModule,
     AuthModule,
-    InformesModule,
+    // InformesModule,
     CaracteristicasModule,
     InventarioModule,
     SeedModule,

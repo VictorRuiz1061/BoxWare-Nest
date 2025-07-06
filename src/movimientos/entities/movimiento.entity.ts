@@ -16,7 +16,7 @@ export class Movimiento {
   cantidad: number;
 
   @CreateDateColumn()
-  fecha_creacion: Date;2
+  fecha_creacion: Date;
 
   @UpdateDateColumn()
   fecha_modificacion: Date;

@@ -79,7 +79,6 @@ export class PermisoService {
 
     // Actualizar campos simples
     permiso.nombre = updatePermisoDto.nombre ?? permiso.nombre;
-    permiso.codigo_nombre = updatePermisoDto.codigo_nombre ?? permiso.codigo_nombre;
     permiso.puede_ver = updatePermisoDto.puede_ver ?? permiso.puede_ver;
     permiso.puede_crear = updatePermisoDto.puede_crear ?? permiso.puede_crear;
     permiso.puede_actualizar = updatePermisoDto.puede_actualizar ?? permiso.puede_actualizar;
@@ -172,7 +171,6 @@ export class PermisoService {
       // Crear un nuevo permiso
       permiso = this.permisoRepository.create({
         nombre: datosPermiso.nombre || `Permiso ${modulo.descripcion_ruta} para ${rol.nombre_rol}`,
-        codigo_nombre: datosPermiso.codigo_nombre || `${modulo.rutas}_${rol.nombre_rol}`.toLowerCase().replace(/\s+/g, '_'),
         rol_id: rol,
         modulo_id: modulo,
         puede_ver: datosPermiso.puede_ver ?? false,
@@ -221,7 +219,6 @@ export class PermisoService {
       // Crear un nuevo permiso
       permiso = this.permisoRepository.create({
         nombre: `Permiso ${modulo.descripcion_ruta} para ${rol.nombre_rol}`,
-        codigo_nombre: `${modulo.rutas}_${rol.nombre_rol}`.toLowerCase().replace(/\s+/g, '_'),
         rol_id: rol,
         modulo_id: modulo,
         puede_ver: puede_ver ?? false,

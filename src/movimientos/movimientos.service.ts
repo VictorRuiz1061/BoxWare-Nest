@@ -33,10 +33,10 @@ export class MovimientosService {
   private esMovimientoEntrada(tipoMovimiento: TipoMovimiento): boolean {
     const tipoNombre = tipoMovimiento.tipo_movimiento.toLowerCase();
     return tipoNombre.includes('entrada') || 
-           tipoNombre.includes('ingreso') || 
-           tipoNombre.includes('adicion') || 
-           tipoNombre.includes('devolucion');
-  }
+    tipoNombre.includes('egreso') || 
+    tipoNombre.includes('retiro') ||
+    tipoNombre.includes('prestamo');
+}
   
   /**
    * Determina si un tipo de movimiento es una salida de material
@@ -150,13 +150,15 @@ export class MovimientosService {
   }
 
   async findAll(): Promise<Movimiento[]> {
-    return this.movimientoRepo.find({ relations: ['usuario', 'tipo_movimiento_id'] });
+    return this.movimientoRepo.find({ 
+      relations: ['usuario', 'tipo_movimiento_id', 'material_id', 'sitio'] 
+    });
   }
 
   async findOne(id: number): Promise<Movimiento> {
     const movimiento = await this.movimientoRepo.findOne({
       where: { id_movimiento: id },
-      relations: ['usuario', 'tipo_movimiento_id'],
+      relations: ['usuario', 'tipo_movimiento_id', 'material_id', 'sitio'],
     });
     if (!movimiento) throw new NotFoundException(`Movimiento con ID ${id} no encontrado`);
     return movimiento;
