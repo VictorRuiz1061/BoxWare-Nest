@@ -221,43 +221,42 @@ export class SeedService implements OnModuleInit {
     const modulos = await this.moduloRepo.find();
     this.logger.log(`Se encontraron ${modulos.length} módulos para asignar permisos`);
     
-    // Para cada módulo, crear un permiso completo para el Super Administrador
-    for (const modulo of modulos) {
-      if (!modulo?.rutas) continue;
-      
-      // Verificar si ya existe un permiso para este módulo y rol
-      const permisoExistente = await this.permisoRepo.findOne({
-        where: {
-          modulo_id: { id_modulo: modulo.id_modulo },
-          rol_id: { id_rol: admin.id_rol }
-        }
+    // Crear un permiso único para el super administrador con todos los módulos
+    const todosLosModulosIds = modulos.map(m => m.id_modulo);
+    
+    // Verificar si ya existe un permiso para el super administrador
+    const permisoExistente = await this.permisoRepo.findOne({
+      where: {
+        nombre: 'Permisos completos Super Administrador',
+        rol_id: { id_rol: admin.id_rol }
+      }
+    });
+    
+    if (!permisoExistente) {
+      // Crear un nuevo permiso con todos los módulos
+      const nuevoPermiso = this.permisoRepo.create({
+        nombre: 'Permisos completos Super Administrador',
+        puede_ver: true,
+        puede_crear: true,
+        puede_actualizar: true,
+        puede_eliminar: true,
+        estado: true,
+        modulo_id: todosLosModulosIds,
+        rol_id: admin
       });
       
-      if (!permisoExistente) {
-        // Crear un nuevo permiso con todos los privilegios
-        const nuevoPermiso = this.permisoRepo.create({
-          nombre: `Permiso completo para ${modulo.rutas}`,
-          puede_ver: true,
-          puede_crear: true,
-          puede_actualizar: true,
-          puede_eliminar: true,
-          estado: true,
-          modulo_id: modulo,
-          rol_id: admin
-        });
-        
-        await this.permisoRepo.save(nuevoPermiso);
-        this.logger.log(`✅ Permiso completo creado para módulo: ${modulo.rutas}`);
-      } else {
-        // Actualizar el permiso existente para asegurar que tiene todos los privilegios
-        permisoExistente.puede_ver = true;
-        permisoExistente.puede_crear = true;
-        permisoExistente.puede_actualizar = true;
-        permisoExistente.puede_eliminar = true;
-        
-        await this.permisoRepo.save(permisoExistente);
-        this.logger.log(`✅ Permiso actualizado para módulo: ${modulo.rutas}`);
-      }
+      await this.permisoRepo.save(nuevoPermiso);
+      this.logger.log(`✅ Permiso completo creado para Super Administrador con ${todosLosModulosIds.length} módulos`);
+    } else {
+      // Actualizar el permiso existente con todos los módulos
+      permisoExistente.puede_ver = true;
+      permisoExistente.puede_crear = true;
+      permisoExistente.puede_actualizar = true;
+      permisoExistente.puede_eliminar = true;
+      permisoExistente.modulo_id = todosLosModulosIds;
+      
+      await this.permisoRepo.save(permisoExistente);
+      this.logger.log(`✅ Permiso actualizado para Super Administrador con ${todosLosModulosIds.length} módulos`);
     }
     
     this.logger.log('Finalizada la creación de permisos para Super Administrador');

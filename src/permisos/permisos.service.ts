@@ -22,54 +22,68 @@ export class PermisoService {
   ) {}
 
   async create(createPermisoDto: CreatePermisoDto): Promise<Permiso[]> {
-  const { rol_id, modulo_id: modulosIds, ...datosPermiso } = createPermisoDto;
+    const { rol_id, modulo_id: modulosIds, ...datosPermiso } = createPermisoDto;
 
-  if (Array.isArray(rol_id)) {
-    throw new NotFoundException(`Se esperaba un solo ID de rol, pero se recibió un array.`);
-  }
+    // Validar que el rol exista
+    const rol = await this.rolRepository.findOneBy({ id_rol: rol_id });
+    if (!rol) {
+      throw new NotFoundException(`Rol con ID ${rol_id} no encontrado`);
+    }
 
-  if (Array.isArray(rol_id)) {
-    throw new NotFoundException(`Se esperaba un solo ID de rol, pero se recibió un array.`);
-  }
-  const rol = await this.rolRepository.findOneBy({ id_rol: rol_id });
-  if (!rol) {
-    throw new NotFoundException(`Rol con ID ${rol_id} no encontrado`);
-  }
+    // Validar que los módulos existan
+    const modulos = await this.moduloRepository.findByIds(modulosIds);
+    if (modulos.length !== modulosIds.length) {
+      const encontradosIds = modulos.map(m => m.id_modulo);
+      const noEncontrados = modulosIds.filter(id => !encontradosIds.includes(id));
+      throw new NotFoundException(`Módulos no encontrados: ${noEncontrados.join(', ')}`);
+    }
 
-  const modulos = await this.moduloRepository.findByIds(modulosIds);
-  if (modulos.length !== modulosIds.length) {
-    const encontradosIds = modulos.map(m => m.id_modulo);
-    const noEncontrados = modulosIds.filter(id => !encontradosIds.includes(id));
-    throw new NotFoundException(`Módulos no encontrados: ${noEncontrados.join(', ')}`);
-  }
-
-  const permisos = modulos.map(modulo => {
-    return this.permisoRepository.create({
-      nombre: `${datosPermiso.nombre} - ${modulo.descripcion_ruta || modulo.rutas}`,
-      puede_ver: datosPermiso.puede_ver ?? false,
-      puede_crear: datosPermiso.puede_crear ?? false,
-      puede_actualizar: datosPermiso.puede_actualizar ?? false,
-      puede_eliminar: false, // O puedes agregarlo si está en el DTO
-      estado: datosPermiso.estado ?? true,
-      rol_id: rol,
-      modulo_id: modulo,
+    // Verificar si ya existe un permiso con el mismo nombre y rol
+    let permisoExistente = await this.permisoRepository.findOne({
+      where: {
+        nombre: datosPermiso.nombre,
+        rol_id: { id_rol: rol.id_rol },
+      },
     });
-  });
 
-  return await this.permisoRepository.save(permisos);
-}
-
+    if (permisoExistente) {
+      // Actualizar el permiso existente con todos los módulos
+      permisoExistente.puede_ver = datosPermiso.puede_ver ?? permisoExistente.puede_ver;
+      permisoExistente.puede_crear = datosPermiso.puede_crear ?? permisoExistente.puede_crear;
+      permisoExistente.puede_actualizar = datosPermiso.puede_actualizar ?? permisoExistente.puede_actualizar;
+      permisoExistente.estado = datosPermiso.estado ?? permisoExistente.estado;
+      permisoExistente.modulo_id = modulosIds; // Guardar todos los módulos
+      
+      const permisoActualizado = await this.permisoRepository.save(permisoExistente);
+      return [permisoActualizado];
+    } else {
+      // Crear UN SOLO permiso con TODOS los módulos
+      const nuevoPermiso = this.permisoRepository.create({
+        nombre: datosPermiso.nombre,
+        puede_ver: datosPermiso.puede_ver ?? false,
+        puede_crear: datosPermiso.puede_crear ?? false,
+        puede_actualizar: datosPermiso.puede_actualizar ?? false,
+        puede_eliminar: false,
+        estado: datosPermiso.estado ?? true,
+        rol_id: rol,
+        modulo_id: modulosIds, // Guardar TODOS los módulos como array
+      });
+      
+      const permisoGuardado = await this.permisoRepository.save(nuevoPermiso);
+      return [permisoGuardado];
+    }
+  }
 
   async findAll(): Promise<Permiso[]> {
     return this.permisoRepository.find({
-      relations: ['modulo_id', 'rol_id'],
+      relations: ['rol_id'],
     });
   }
 
   async findOne(id: number): Promise<Permiso> {
     const permiso = await this.permisoRepository.findOne({
       where: { id_permiso: id },
-      relations: ['modulo_id', 'rol_id'],
+      relations: ['rol_id'],
     });
 
     if (!permiso) {
@@ -85,31 +99,21 @@ export class PermisoService {
       throw new NotFoundException(`Permiso con ID ${id} no encontrado`);
     }
 
-    // Actualizar relaciones si vienen en el DTO
-    if (updatePermisoDto.modulo_id) {
-      if (Array.isArray(updatePermisoDto.modulo_id)) {
-        throw new NotFoundException(`Se esperaba un solo ID de módulo, pero se recibió un array.`);
-      }
-      const modulo = await this.moduloRepository.findOneBy({ id_modulo: updatePermisoDto.modulo_id });
-      if (!modulo) throw new NotFoundException(`Módulo con ID ${updatePermisoDto.modulo_id} no encontrado`);
-      permiso.modulo_id = modulo;
-    }
-
-    if (updatePermisoDto.rol_id) {
-      if (Array.isArray(updatePermisoDto.rol_id)) {
-        throw new NotFoundException(`Se esperaba un solo ID de rol, pero se recibió un array.`);
-      }
-      const rol = await this.rolRepository.findOneBy({ id_rol: updatePermisoDto.rol_id });
-      if (!rol) throw new NotFoundException(`Rol con ID ${updatePermisoDto.rol_id} no encontrado`);
-      permiso.rol_id = rol;
-    }
-
     // Actualizar campos simples
     permiso.nombre = updatePermisoDto.nombre ?? permiso.nombre;
     permiso.puede_ver = updatePermisoDto.puede_ver ?? permiso.puede_ver;
     permiso.puede_crear = updatePermisoDto.puede_crear ?? permiso.puede_crear;
     permiso.puede_actualizar = updatePermisoDto.puede_actualizar ?? permiso.puede_actualizar;
     permiso.estado = updatePermisoDto.estado ?? permiso.estado;
+
+    // Si se envían nuevos módulos, actualizarlos
+    if (updatePermisoDto.modulo_id && Array.isArray(updatePermisoDto.modulo_id)) {
+      const modulos = await this.moduloRepository.findByIds(updatePermisoDto.modulo_id);
+      if (modulos.length !== updatePermisoDto.modulo_id.length) {
+        throw new NotFoundException(`Algunos módulos no fueron encontrados`);
+      }
+      permiso.modulo_id = updatePermisoDto.modulo_id;
+    }
 
     return this.permisoRepository.save(permiso);
   }
@@ -119,6 +123,73 @@ export class PermisoService {
     if (result.affected === 0) {
       throw new NotFoundException(`Permiso con ID ${id} no encontrado`);
     }
+  }
+
+  /**
+   * Limpia permisos duplicados por nombre y rol
+   * Mantiene solo el más reciente y combina los módulos
+   */
+  async limpiarPermisosDuplicados(): Promise<{ eliminados: number, mensaje: string }> {
+    // Obtener todos los permisos
+    const todosLosPermisos = await this.permisoRepository.find({
+      relations: ['rol_id'],
+    });
+
+    // Agrupar permisos por combinación nombre-rol
+    const permisosPorGrupo = new Map<string, Permiso[]>();
+    
+    todosLosPermisos.forEach(permiso => {
+      const clave = `${permiso.nombre}-${permiso.rol_id.id_rol}`;
+      if (!permisosPorGrupo.has(clave)) {
+        permisosPorGrupo.set(clave, []);
+      }
+      permisosPorGrupo.get(clave)!.push(permiso);
+    });
+
+    let eliminados = 0;
+    const permisosAEliminar: number[] = [];
+
+    // Para cada grupo de permisos duplicados
+    for (const [clave, permisos] of permisosPorGrupo) {
+      if (permisos.length > 1) {
+        // Ordenar por fecha de creación (más reciente primero)
+        permisos.sort((a, b) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime());
+        
+        // Mantener el primero (más reciente) y eliminar los demás
+        const [permisoAMantener, ...permisosParaEliminar] = permisos;
+        
+        // Combinar todos los módulos únicos
+        const todosLosModulos = new Set<number>();
+        permisos.forEach(p => {
+          if (p.modulo_id && Array.isArray(p.modulo_id)) {
+            p.modulo_id.forEach(modId => todosLosModulos.add(modId));
+          } else if (typeof p.modulo_id === 'number') {
+            // Manejar caso donde modulo_id es un solo número (datos antiguos)
+            todosLosModulos.add(p.modulo_id);
+          }
+        });
+        
+        // Actualizar el permiso que se mantiene con todos los módulos
+        permisoAMantener.modulo_id = Array.from(todosLosModulos);
+        await this.permisoRepository.save(permisoAMantener);
+        
+        // Marcar los demás para eliminar
+        permisosParaEliminar.forEach(permiso => {
+          permisosAEliminar.push(permiso.id_permiso);
+          eliminados++;
+        });
+      }
+    }
+
+    // Eliminar los permisos duplicados
+    if (permisosAEliminar.length > 0) {
+      await this.permisoRepository.delete(permisosAEliminar);
+    }
+
+    return {
+      eliminados,
+      mensaje: `Se eliminaron ${eliminados} permisos duplicados. Cada permiso ahora tiene todos los módulos combinados.`
+    };
   }
 
   // Métodos para el super administrador
@@ -132,15 +203,7 @@ export class PermisoService {
       relations: ['rol'],
     });
     
-    console.log('isSuperAdmin - Usuario encontrado:', {
-      id: usuario?.id_usuario,
-      email: usuario?.email,
-      rol: usuario?.rol?.nombre_rol,
-      rol_id: usuario?.rol?.id_rol
-    });
-    
     if (!usuario || !usuario.rol) {
-      console.log('isSuperAdmin - Usuario sin rol asignado');
       return false;
     }
     
@@ -148,126 +211,9 @@ export class PermisoService {
     const esSuperAdmin = usuario.rol.nombre_rol.toLowerCase() === 'super administrador';
     const esAdmin = usuario.rol.nombre_rol === 'Administrador';
     
-    console.log(`isSuperAdmin - Es super admin: ${esSuperAdmin}, Es admin: ${esAdmin}`);
-    
     return esSuperAdmin || esAdmin;
   }
-  
-  /**
-   * Asigna o actualiza permisos para un rol y módulo específicos
-   * Utiliza directamente la tabla de permisos existente
-   */
-  async asignarPermiso(
-    usuarioId: number,
-    createPermisoDto: CreatePermisoDto
-  ): Promise<Permiso> {
-    // Verificar si el usuario es super administrador
-    const esSuperAdmin = await this.isSuperAdmin(usuarioId);
-    if (!esSuperAdmin) {
-      throw new ForbiddenException('Solo el super administrador puede asignar permisos');
-    }
-    
-    const { rol_id, modulo_id, ...datosPermiso } = createPermisoDto;
-    
-    // Validar que rol_id no sea un array
-    if (Array.isArray(rol_id)) {
-      throw new NotFoundException(`Se esperaba un solo ID de rol, pero se recibió un array.`);
-    }
 
-    // Buscar el rol y el módulo
-    const rol = await this.rolRepository.findOneBy({ id_rol: rol_id });
-    if (!rol) {
-      throw new NotFoundException(`Rol con ID ${rol_id} no encontrado`);
-    }
-    
-    let modulo;
-    if (Array.isArray(modulo_id)) {
-      throw new NotFoundException(`Se esperaba un solo ID de módulo, pero se recibió un array.`);
-    } else {
-      modulo = await this.moduloRepository.findOneBy({ id_modulo: modulo_id });
-    }
-    if (!modulo) {
-      throw new NotFoundException(`Módulo con ID ${modulo_id} no encontrado`);
-    }
-    
-    // Verificar si ya existe un permiso para este rol y módulo
-    let permiso = await this.permisoRepository.findOne({
-      where: {
-        rol_id: { id_rol: rol_id },
-        modulo_id: { id_modulo: modulo_id },
-      },
-    });
-    
-    if (permiso) {
-      // Actualizar el permiso existente
-      permiso.puede_ver = datosPermiso.puede_ver ?? permiso.puede_ver;
-      permiso.puede_crear = datosPermiso.puede_crear ?? permiso.puede_crear;
-      permiso.puede_actualizar = datosPermiso.puede_actualizar ?? permiso.puede_actualizar;
-      permiso.estado = datosPermiso.estado ?? permiso.estado;
-    } else {
-      // Crear un nuevo permiso
-      permiso = this.permisoRepository.create({
-        nombre: datosPermiso.nombre || `Permiso ${modulo.descripcion_ruta} para ${rol.nombre_rol}`,
-        rol_id: rol,
-        modulo_id: modulo,
-        puede_ver: datosPermiso.puede_ver ?? false,
-        puede_crear: datosPermiso.puede_crear ?? false,
-        puede_actualizar: datosPermiso.puede_actualizar ?? false,
-        estado: datosPermiso.estado ?? true,
-      });
-    }
-    
-    return this.permisoRepository.save(permiso);
-  }
-  
-  /**
-   * Método simplificado para asignar permisos a una tabla/módulo específico
-   * Este método es utilizado por el super administrador para gestionar permisos por tabla
-   */
-  async asignarPermisoTabla(asignarPermisosDto: any): Promise<Permiso> {
-    const { rol_id, modulo_id, puede_ver, puede_crear, puede_actualizar, estado } = asignarPermisosDto;
-    
-    // Buscar el rol y el módulo
-    const rol = await this.rolRepository.findOneBy({ id_rol: rol_id });
-    if (!rol) {
-      throw new NotFoundException(`Rol con ID ${rol_id} no encontrado`);
-    }
-    
-    const modulo = await this.moduloRepository.findOneBy({ id_modulo: modulo_id });
-    if (!modulo) {
-      throw new NotFoundException(`Módulo con ID ${modulo_id} no encontrado`);
-    }
-    
-    // Verificar si ya existe un permiso para este rol y módulo
-    let permiso = await this.permisoRepository.findOne({
-      where: {
-        rol_id: { id_rol: rol_id },
-        modulo_id: { id_modulo: modulo_id },
-      },
-    });
-    
-    if (permiso) {
-      // Actualizar el permiso existente
-      if (puede_ver !== undefined) permiso.puede_ver = puede_ver;
-      if (puede_crear !== undefined) permiso.puede_crear = puede_crear;
-      if (puede_actualizar !== undefined) permiso.puede_actualizar = puede_actualizar;
-      if (estado !== undefined) permiso.estado = estado;
-    } else {
-      // Crear un nuevo permiso
-      permiso = this.permisoRepository.create({
-        nombre: `Permiso ${modulo.descripcion_ruta} para ${rol.nombre_rol}`,
-        rol_id: rol,
-        modulo_id: modulo,
-        puede_ver: puede_ver ?? false,
-        puede_crear: puede_crear ?? false,
-        puede_actualizar: puede_actualizar ?? false,
-        estado: estado ?? true,
-      });
-    }
-    
-    return this.permisoRepository.save(permiso);
-  }
-  
   /**
    * Obtiene todos los permisos de un rol específico
    */
@@ -276,22 +222,10 @@ export class PermisoService {
       where: {
         rol_id: { id_rol: rolId },
       },
-      relations: ['modulo_id', 'rol_id'],
+      relations: ['rol_id'],
     });
   }
-  
-  /**
-   * Obtiene todos los permisos para un módulo específico
-   */
-  async getPermisosByModulo(moduloId: number): Promise<Permiso[]> {
-    return this.permisoRepository.find({
-      where: {
-        modulo_id: { id_modulo: moduloId },
-      },
-      relations: ['modulo_id', 'rol_id'],
-    });
-  }
-  
+
   /**
    * Verifica si un usuario tiene un permiso específico para un módulo y acción
    * basado en su token JWT
@@ -322,8 +256,8 @@ export class PermisoService {
     const permisos = await this.permisoRepository.find({
       where: {
         rol_id: { id_rol: usuario.rol.id_rol },
-        modulo_id: { id_modulo: modulo.id_modulo },
       },
+      relations: ['rol_id'],
     });
     
     if (permisos.length === 0) {
@@ -332,22 +266,24 @@ export class PermisoService {
     
     // Verificar si alguno de los permisos permite la acción
     for (const permiso of permisos) {
-      switch (accion) {
-        case 'ver':
-          if (permiso.puede_ver === true) return true;
-          break;
-        case 'crear':
-          if (permiso.puede_crear === true) return true;
-          break;
-        case 'actualizar':
-          if (permiso.puede_actualizar === true) return true;
-          break;
+      if (Array.isArray(permiso.modulo_id) && permiso.modulo_id.includes(modulo.id_modulo)) {
+        switch (accion) {
+          case 'ver':
+            if (permiso.puede_ver === true) return true;
+            break;
+          case 'crear':
+            if (permiso.puede_crear === true) return true;
+            break;
+          case 'actualizar':
+            if (permiso.puede_actualizar === true) return true;
+            break;
+        }
       }
     }
     
     return false;
   }
-  
+
   /**
    * Obtiene todos los módulos/tablas con sus permisos para un rol específico
    * Útil para mostrar en la interfaz de administración de permisos
@@ -361,31 +297,26 @@ export class PermisoService {
       where: {
         rol_id: { id_rol: rolId },
       },
-      relations: ['modulo_id'],
-    });
-    
-    // Crear un mapa de permisos por módulo para acceso rápido
-    const permisosPorModulo = {};
-    permisos.forEach(permiso => {
-      if (permiso.modulo_id && permiso.modulo_id.id_modulo) {
-        permisosPorModulo[permiso.modulo_id.id_modulo] = permiso;
-      }
+      relations: ['rol_id'],
     });
     
     // Construir la respuesta con todos los módulos y sus permisos
     return modulos.map(modulo => {
-      const permiso = permisosPorModulo[modulo.id_modulo] || null;
+      // Buscar si algún permiso incluye este módulo
+      const permisoConModulo = permisos.find(permiso => 
+        Array.isArray(permiso.modulo_id) && permiso.modulo_id.includes(modulo.id_modulo)
+      );
       
       return {
         id_modulo: modulo.id_modulo,
         nombre: modulo.descripcion_ruta || modulo.rutas,
         ruta: modulo.rutas,
-        permisos: permiso ? {
-          id_permiso: permiso.id_permiso,
-          puede_ver: permiso.puede_ver,
-          puede_crear: permiso.puede_crear,
-          puede_actualizar: permiso.puede_actualizar,
-          estado: permiso.estado,
+        permisos: permisoConModulo ? {
+          id_permiso: permisoConModulo.id_permiso,
+          puede_ver: permisoConModulo.puede_ver,
+          puede_crear: permisoConModulo.puede_crear,
+          puede_actualizar: permisoConModulo.puede_actualizar,
+          estado: permisoConModulo.estado,
         } : {
           puede_ver: false,
           puede_crear: false,

@@ -46,37 +46,6 @@ export class PermisosController {
     return this.permisosService.remove(+id);
   }
 
-  // Endpoints para el super administrador
-
-  /**
-   * Asigna permisos a un rol específico para un módulo
-   * Utiliza directamente el DTO de permisos existente
-   */
-  @Post('asignar')
-  @UseGuards(PermissionGuard)
-  @RequirePermiso('permisos', 'crear')
-  async asignarPermiso(
-    @Request() req,
-    @Body() createPermisoDto: CreatePermisoDto
-  ) {
-    return this.permisosService.asignarPermiso(req.user.id_usuario, createPermisoDto);
-  }
-
-  /**
-   * Asigna permisos específicos (ver, crear, actualizar) a un rol para un módulo/tabla
-   * Este endpoint es más simple y directo para el super administrador
-   */
-  @Post('asignar-tabla')
-  @UseGuards(PermissionGuard)
-  @RequirePermiso('permisos', 'crear')
-  async asignarPermisoTabla(
-    @Request() req,
-    @Body() createPermisoDto: CreatePermisoDto
-  ) {
-    const usuarioId = req.user.id_usuario;
-    return this.permisosService.asignarPermisoTabla(createPermisoDto);
-  }
-
   /**
    * Obtiene todos los permisos de un rol específico
    */
@@ -85,16 +54,6 @@ export class PermisosController {
   @RequirePermiso('permisos', 'ver')
   async getPermisosByRol(@Param('id') id: string, @Request() req) {
     return this.permisosService.getPermisosByRol(+id);
-  }
-
-  /**
-   * Obtiene todos los permisos para un módulo específico
-   */
-  @Get('modulo/:id')
-  @UseGuards(PermissionGuard)
-  @RequirePermiso('permisos', 'ver')
-  async getPermisosByModulo(@Param('id') id: string, @Request() req) {
-    return this.permisosService.getPermisosByModulo(+id);
   }
 
   /**
@@ -117,5 +76,16 @@ export class PermisosController {
   @RequirePermiso('permisos', 'ver')
   async getTablasConPermisos(@Param('rolId') rolId: string, @Request() req) {
     return this.permisosService.getTablasConPermisos(+rolId);
+  }
+
+  /**
+   * Limpia permisos duplicados por nombre y rol
+   * Mantiene solo el más reciente y combina los módulos
+   */
+  @Post('limpiar-duplicados')
+  @UseGuards(PermissionGuard)
+  @RequirePermiso('permisos', 'actualizar')
+  async limpiarPermisosDuplicados(@Request() req) {
+    return this.permisosService.limpiarPermisosDuplicados();
   }
 }

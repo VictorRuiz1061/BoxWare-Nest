@@ -89,86 +89,59 @@ export class PermissionGuard implements CanActivate {
       return false; // No tiene ningún permiso asignado
     }
     
-    // Filtrar los permisos por el módulo correcto
-    console.log('Todos los permisos del usuario:', permisos.map(p => ({
-      id_permiso: p.id_permiso,
-      modulo: p.modulo_id?.rutas || 'sin módulo',
+    // Debug: mostrar permisos del usuario
+    console.log('Permisos del usuario:', permisos.map(p => ({
+      id: p.id_permiso,
+      nombre: p.nombre,
+      modulo: Array.isArray(p.modulo_id) ? `módulos: [${p.modulo_id.join(',')}]` : 'sin módulo',
       puede_ver: p.puede_ver,
       puede_crear: p.puede_crear,
       puede_actualizar: p.puede_actualizar,
-      puede_eliminar: p.puede_eliminar,
-      estado: p.estado
     })));
-    
-    const permisosModulo = permisos.filter(p => {
-      if (!p.modulo_id) {
-        console.log('Permiso sin módulo asociado');
-        return false;
-      }
-      
-      // Comparación más flexible: normalizar ambos valores a minúsculas y sin espacios
-      const rutaNormalizada = p.modulo_id.rutas.toLowerCase().trim();
-      const moduloNormalizado = modulo.toLowerCase().trim();
-      
-      // Verificar coincidencia exacta o si la ruta contiene el módulo
-      const coincideExacto = rutaNormalizada === moduloNormalizado;
-      const contiene = rutaNormalizada.includes(moduloNormalizado);
-      
-      console.log(`Módulo DB: '${p.modulo_id.rutas}' (${rutaNormalizada}) vs Requerido: '${modulo}' (${moduloNormalizado})`);
-      console.log(`Coincidencia exacta: ${coincideExacto}, Contiene: ${contiene}`);
-      
-      return coincideExacto || contiene;
-    });
-    
-    if (permisosModulo.length === 0) {
-      console.log(`No tiene permisos para el módulo: ${modulo}`);
-      return false; // No tiene permisos para este módulo
-    }
 
-    // Verificar la acción específica en todos los permisos del módulo
-    for (const permiso of permisosModulo) {
-      console.log(`Verificando permiso: ${JSON.stringify({
-        puede_ver: permiso.puede_ver,
-        puede_crear: permiso.puede_crear,
-        puede_actualizar: permiso.puede_actualizar,
-        estado: permiso.estado
-      })}`);
+    // Verificar permisos para la acción requerida
+    for (const p of permisos) {
+      if (!p.modulo_id || !Array.isArray(p.modulo_id)) continue;
       
-      // Verificar si el permiso está activo
-      if (permiso.estado !== true) {
-        console.log('El permiso no está activo');
-        continue; // Si el permiso no está activo, ignorarlo
-      }
+      // Si alguno de los módulos del permiso contiene el módulo requerido
+      const tieneModulo = p.modulo_id.includes(parseInt(modulo)) || 
+                         p.modulo_id.some(modId => modId.toString() === modulo);
       
-      switch (accion) {
-        case 'ver':
-          if (permiso.puede_ver === true) {
-            console.log('Tiene permiso para ver');
-            return true;
-          }
-          break;
-        case 'crear':
-          if (permiso.puede_crear === true) {
-            console.log('Tiene permiso para crear');
-            return true;
-          }
-          break;
-        case 'actualizar':
-          if (permiso.puede_actualizar === true) {
-            console.log('Tiene permiso para actualizar');
-            return true;
-          }
-          break;
-        case 'eliminar':
-          if (permiso.puede_eliminar === true) {
-            console.log('Tiene permiso para eliminar');
-            return true;
-          }
-          break;
+      console.log(`Verificando módulo: ${modulo} en ${p.modulo_id}, tieneModulo: ${tieneModulo}`);
+
+      if (tieneModulo) {
+        // Verificar la acción específica
+        console.log(`Verificando permiso: ${JSON.stringify({
+          puede_ver: p.puede_ver,
+          puede_crear: p.puede_crear,
+          puede_actualizar: p.puede_actualizar,
+          accion_requerida: accion
+        })}`);
+        
+        switch (accion) {
+          case 'ver':
+            if (p.puede_ver === true) {
+              console.log('✓ Permiso concedido para VER');
+              return true;
+            }
+            break;
+          case 'crear':
+            if (p.puede_crear === true) {
+              console.log('✓ Permiso concedido para CREAR');
+              return true;
+            }
+            break;
+          case 'actualizar':
+            if (p.puede_actualizar === true) {
+              console.log('✓ Permiso concedido para ACTUALIZAR');
+              return true;
+            }
+            break;
+        }
       }
     }
     
-    console.log('No tiene el permiso específico para la acción solicitada');
-    return false; // No tiene el permiso específico para la acción
+    console.log('No tiene permisos para la acción solicitada');
+    return false;
   }
 }

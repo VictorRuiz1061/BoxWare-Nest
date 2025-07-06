@@ -1,19 +1,21 @@
-import { IsNotEmpty, IsNumber, IsString, IsBoolean, IsOptional } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsString, IsBoolean, IsOptional, IsArray } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 
 export class CreatePermisoDto {
   @IsNotEmpty()
   @IsString()
   nombre: string;
 
-
   @IsNotEmpty()
+  @IsArray()
   @IsNumber({}, { each: true })
+  @Type(() => Number)
   modulo_id: number[]; 
 
   @IsNotEmpty()
-  @IsNumber({}, { each: true })
-  rol_id: number[];
+  @IsNumber()
+  @Type(() => Number)
+  rol_id: number;
 
   @IsOptional()
   @IsBoolean()
@@ -29,8 +31,6 @@ export class CreatePermisoDto {
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true || value === 1)
   puede_actualizar?: boolean;
-
-
 
   @IsOptional()
   @IsBoolean()
