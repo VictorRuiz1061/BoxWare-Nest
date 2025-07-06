@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { Permiso } from './entities/permiso.entity';
 import { CreatePermisoDto } from './dto/create-permiso.dto';
 import { UpdatePermisoDto } from './dto/update-permiso.dto';
@@ -94,28 +94,90 @@ export class PermisoService {
   }
 
   async update(id: number, updatePermisoDto: UpdatePermisoDto): Promise<Permiso> {
-    const permiso = await this.permisoRepository.findOneBy({ id_permiso: id });
-    if (!permiso) {
+    const permisoExistente = await this.permisoRepository.findOne({
+      where: { id_permiso: id },
+      relations: ['rol_id'],
+    });
+    
+    if (!permisoExistente) {
       throw new NotFoundException(`Permiso con ID ${id} no encontrado`);
     }
 
-    // Actualizar campos simples
-    permiso.nombre = updatePermisoDto.nombre ?? permiso.nombre;
-    permiso.puede_ver = updatePermisoDto.puede_ver ?? permiso.puede_ver;
-    permiso.puede_crear = updatePermisoDto.puede_crear ?? permiso.puede_crear;
-    permiso.puede_actualizar = updatePermisoDto.puede_actualizar ?? permiso.puede_actualizar;
-    permiso.estado = updatePermisoDto.estado ?? permiso.estado;
+    const { rol_id, modulo_id: modulosIds, ...datosPermiso } = updatePermisoDto;
 
-    // Si se envían nuevos módulos, actualizarlos
-    if (updatePermisoDto.modulo_id && Array.isArray(updatePermisoDto.modulo_id)) {
-      const modulos = await this.moduloRepository.findByIds(updatePermisoDto.modulo_id);
-      if (modulos.length !== updatePermisoDto.modulo_id.length) {
-        throw new NotFoundException(`Algunos módulos no fueron encontrados`);
+    // Si se proporciona un nuevo rol_id, validar que exista
+    if (rol_id) {
+      const rol = await this.rolRepository.findOneBy({ id_rol: rol_id });
+      if (!rol) {
+        throw new NotFoundException(`Rol con ID ${rol_id} no encontrado`);
       }
-      permiso.modulo_id = updatePermisoDto.modulo_id;
+      permisoExistente.rol_id = rol;
     }
 
-    return this.permisoRepository.save(permiso);
+    // Si se proporcionan módulos, validar que existan
+    if (modulosIds && Array.isArray(modulosIds)) {
+      const modulos = await this.moduloRepository.findByIds(modulosIds);
+      if (modulos.length !== modulosIds.length) {
+        const encontradosIds = modulos.map(m => m.id_modulo);
+        const noEncontrados = modulosIds.filter(id => !encontradosIds.includes(id));
+        throw new NotFoundException(`Módulos no encontrados: ${noEncontrados.join(', ')}`);
+      }
+      permisoExistente.modulo_id = modulosIds;
+    }
+
+    // Actualizar campos simples
+    permisoExistente.nombre = datosPermiso.nombre ?? permisoExistente.nombre;
+    permisoExistente.puede_ver = datosPermiso.puede_ver ?? permisoExistente.puede_ver;
+    permisoExistente.puede_crear = datosPermiso.puede_crear ?? permisoExistente.puede_crear;
+    permisoExistente.puede_actualizar = datosPermiso.puede_actualizar ?? permisoExistente.puede_actualizar;
+    permisoExistente.estado = datosPermiso.estado ?? permisoExistente.estado;
+
+    // Si se cambió el nombre o el rol, verificar que no exista otro permiso con la misma combinación
+    if (datosPermiso.nombre || rol_id) {
+      const nombreFinal = datosPermiso.nombre ?? permisoExistente.nombre;
+      const rolFinal = rol_id ? await this.rolRepository.findOneBy({ id_rol: rol_id }) : permisoExistente.rol_id;
+      
+      // Verificar que rolFinal no sea null (aunque ya se validó arriba)
+      if (!rolFinal) {
+        throw new NotFoundException(`Error interno: No se pudo obtener el rol`);
+      }
+      
+      const permisoConflicto = await this.permisoRepository.findOne({
+        where: {
+          nombre: nombreFinal,
+          rol_id: { id_rol: rolFinal.id_rol },
+          id_permiso: Not(id), // Excluir el permiso actual
+        },
+      });
+
+      if (permisoConflicto) {
+        // Si existe un conflicto, combinar los módulos y eliminar el permiso conflictivo
+        const todosLosModulos = new Set<number>();
+        
+        // Agregar módulos del permiso actual
+        if (permisoExistente.modulo_id && Array.isArray(permisoExistente.modulo_id)) {
+          permisoExistente.modulo_id.forEach(modId => todosLosModulos.add(modId));
+        }
+        
+        // Agregar módulos del permiso conflictivo
+        if (permisoConflicto.modulo_id && Array.isArray(permisoConflicto.modulo_id)) {
+          permisoConflicto.modulo_id.forEach(modId => todosLosModulos.add(modId));
+        }
+        
+        // Si se enviaron nuevos módulos, también incluirlos
+        if (modulosIds && Array.isArray(modulosIds)) {
+          modulosIds.forEach(modId => todosLosModulos.add(modId));
+        }
+        
+        // Actualizar el permiso actual con todos los módulos
+        permisoExistente.modulo_id = Array.from(todosLosModulos);
+        
+        // Eliminar el permiso conflictivo
+        await this.permisoRepository.delete(permisoConflicto.id_permiso);
+      }
+    }
+
+    return this.permisoRepository.save(permisoExistente);
   }
 
   async remove(id: number): Promise<void> {
