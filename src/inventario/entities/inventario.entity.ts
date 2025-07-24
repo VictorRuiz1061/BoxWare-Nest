@@ -9,7 +9,10 @@ export class Inventario {
   @Column()
   stock: number;
 
-  @ManyToOne(() => Sitio, sitio => sitio.inventarios)
+  @Column({ name: 'sitio_id' })
+  sitio_id: number;
+
+  @ManyToOne(() => Sitio)
   @JoinColumn({ name: 'sitio_id' })
   sitio: Sitio;
 

@@ -24,11 +24,14 @@ export class SitioService {
       throw new NotFoundException(`TipoSitio con ID ${dto.tipo_sitio_id} no encontrado`);
     }
 
-    // Crear el nuevo Sitio, asignando la entidad completa a la relación
+    // Crear el nuevo Sitio, asignando solo el ID
     const nuevo = this.sitioRepo.create({
       ...dto,
-      tipo_sitio_id: tipoSitio,  // Asignamos el objeto TipoSitio completo
+      tipo_sitio_id: dto.tipo_sitio_id,  // Asignamos solo el ID
     });
+
+    // También establecemos la relación para tener acceso al objeto completo
+    nuevo.tipo_sitio = tipoSitio;
 
     return this.sitioRepo.save(nuevo);
   }

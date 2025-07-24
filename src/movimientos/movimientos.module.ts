@@ -4,14 +4,17 @@ import { Movimiento } from './entities/movimiento.entity';
 import { Usuario } from '../usuarios/entities/usuario.entity';
 import { TipoMovimiento } from 'src/tipos-movimientos/entities/tipos-movimiento.entity';
 import { Material } from '../materiales/entities/materiale.entity';
+import { Sitio } from '../sitios/entities/sitio.entity';
 import { MovimientosService } from './movimientos.service';
 import { MovimientosController } from './movimientos.controller';
 import { InventarioManagerModule } from '../common/modules/inventario-manager.module';
+import { UbicacionesModule } from '../ubicaciones/ubicaciones.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Movimiento, Usuario, TipoMovimiento, Material]),
-    InventarioManagerModule // Importamos el módulo común de gestión de inventario
+    TypeOrmModule.forFeature([Movimiento, Usuario, TipoMovimiento, Material, Sitio]),
+    InventarioManagerModule, // Importamos el módulo común de gestión de inventario
+    UbicacionesModule // Importamos el módulo de ubicaciones
   ],
   controllers: [MovimientosController],
   providers: [MovimientosService],

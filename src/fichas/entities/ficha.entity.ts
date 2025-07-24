@@ -16,7 +16,10 @@ export class Ficha {
   @UpdateDateColumn()
   fecha_modificacion: Date;
 
-  @ManyToOne(() => Usuario, usuario => usuario.fichas)
+  @Column({ name: 'usuario_id' })
+  usuario_id: number;
+
+  @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'usuario_id' })
   usuario: Usuario;
 

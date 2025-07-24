@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { Permiso } from '../../permisos/entities/permiso.entity';
 
 @Entity('modulos')
 export class Modulo {
@@ -39,7 +38,4 @@ export class Modulo {
 
   @OneToMany(() => Modulo, modulo => modulo.modulo_padre)
   submodulos: Modulo[];
-  
-  @OneToMany(() => Permiso, permiso => permiso.modulo_id)
-  permisos: Permiso[];
 }

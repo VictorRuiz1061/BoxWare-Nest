@@ -21,19 +21,48 @@ export class Movimiento {
   @UpdateDateColumn()
   fecha_modificacion: Date;
 
-  @ManyToOne(() => Usuario, usuario => usuario.movimientos)
+  @Column({ name: 'usuario_movimiento_id' })
+  usuario_movimiento_id: number;
+
+  @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'usuario_movimiento_id' })
   usuario: Usuario;
 
-  @ManyToOne(() => TipoMovimiento, tipo => tipo.movimientos)
+  @Column({ name: 'tipo_movimiento_id' })
+  tipo_movimiento_id: number;
+
+  @ManyToOne(() => TipoMovimiento)
   @JoinColumn({ name: 'tipo_movimiento_id' })
-  tipo_movimiento_id: TipoMovimiento;
+  tipo_movimiento: TipoMovimiento;
 
-  @ManyToOne(() => Material, material => material.movimientos, { nullable: true, onDelete: 'SET NULL' })
+  @Column({ name: 'material_id', nullable: true })
+  material_id: number;
+
+  @ManyToOne(() => Material, { nullable: true })
   @JoinColumn({ name: 'material_id' })
-  material_id: Material;
+  material: Material;
 
+  @Column({ name: 'sitio_origen_id', nullable: true })
+  sitio_origen_id: number;
+  
   @ManyToOne(() => Sitio, { nullable: true })
-  @JoinColumn({ name: 'sitio_id' })
-  sitio: Sitio;
+  @JoinColumn({ name: 'sitio_origen_id' })
+  sitio_origen: Sitio;
+  
+  @Column({ name: 'sitio_destino_id', nullable: true })
+  sitio_destino_id: number;
+  
+  @ManyToOne(() => Sitio, { nullable: true })
+  @JoinColumn({ name: 'sitio_destino_id' })
+  sitio_destino: Sitio;
+  
+  @Column({ name: 'responsable_id', nullable: true })
+  responsable_id: number;
+  
+  @ManyToOne(() => Usuario, { nullable: true })
+  @JoinColumn({ name: 'responsable_id' })
+  responsable: Usuario;
+  
+  @Column({ nullable: true, type: 'text' })
+  observaciones: string;
 }

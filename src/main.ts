@@ -4,7 +4,6 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
-
 // Importar componentes comunes
 import { FileExceptionFilter, HttpExceptionFilter } from './common/filters';
 import { TransformInterceptor } from './common/interceptors';
@@ -17,7 +16,7 @@ async function bootstrap() {
     APP_CONSTANTS.IMAGES_PATHS.MATERIALES,
     APP_CONSTANTS.IMAGES_PATHS.USUARIOS
   ];
-  
+
   // Crear las carpetas si no existen
   imagesPaths.forEach(path => {
     const fullPath = join(__dirname, '..', path);
@@ -30,14 +29,14 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', APP_CONSTANTS.IMAGES_PATHS.MATERIALES), {
     prefix: APP_CONSTANTS.IMAGES_BASE_URLS.MATERIALES + '/',
   });
-  
+
   app.useStaticAssets(join(__dirname, '..', APP_CONSTANTS.IMAGES_PATHS.USUARIOS), {
     prefix: APP_CONSTANTS.IMAGES_BASE_URLS.USUARIOS + '/',
   });
 
   // Configurar CORS
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -46,21 +45,21 @@ async function bootstrap() {
   // Configurar validación global
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
-    forbidNonWhitelisted: false, 
+    forbidNonWhitelisted: false,
     transform: true,
     transformOptions: { enableImplicitConversion: true },
-    disableErrorMessages: false, 
+    disableErrorMessages: false,
   }));
-  
+
   // Añadir filtros globales para excepciones
   app.useGlobalFilters(
     new FileExceptionFilter(),
     new HttpExceptionFilter()
   );
-  
-  // Añadir interceptor global para transformar respuestas
+
+  // Añadir interceptor global para transformar respuestas 
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.PORT || '3000', '0.0.0.0');
 }
 bootstrap();

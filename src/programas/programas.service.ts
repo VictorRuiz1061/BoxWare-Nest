@@ -25,9 +25,10 @@ export class ProgramasService {
       throw new NotFoundException(`Area with ID ${area_id} not found`);
     }
 
+    // Crear el programa con los datos necesarios
     const programa = this.programaRepository.create({
       ...rest,
-      area, // Asigna el objeto area a la relación
+      area_id, // Asignar el ID del área directamente
     });
 
     return await this.programaRepository.save(programa);
