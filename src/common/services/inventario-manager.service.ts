@@ -1,9 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InventarioService } from '../../inventario/inventario.service';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Material } from 'src/materiales/entities/materiale.entity';
-import { Inventario } from 'src/inventario/entities/inventario.entity';
 
 /**
  * Servicio común para la gestión de inventario
@@ -11,13 +7,7 @@ import { Inventario } from 'src/inventario/entities/inventario.entity';
  */
 @Injectable()
 export class InventarioManagerService {
-  constructor(
-    private readonly inventarioService: InventarioService,
-    @InjectRepository(Material)
-    private readonly materialRepo: Repository<Material>,
-    @InjectRepository(Inventario)
-    private readonly inventarioRepo: Repository<Inventario>
-  ) {}
+  constructor(private readonly inventarioService: InventarioService) {}
 
   /**
    * Actualiza el stock de un material en un sitio específico
@@ -36,23 +26,7 @@ export class InventarioManagerService {
     descripcion?: string
   ): Promise<boolean> {
     try {
-      // Verificar que el material existe
-      const material = await this.materialRepo.findOne({
-        where: { id_material: materialId }
-      });
-      if (!material) {
-        throw new NotFoundException(`Material con ID ${materialId} no encontrado`);
-      }
-      // Buscar si ya existe un inventario para este material en este sitio
-      let inventario = await this.inventarioRepo.findOne({
-        where: { 
-          sitio: { id_sitio: sitioId }
-        },
-        relations: ['sitio']
-      });
-
-      // Actualizar el stock en el inventario
-      await this.inventarioService.actualizarStock(sitioId, cantidad);
+      await this.inventarioService.actualizarStock(materialId, sitioId, cantidad);
       return true;
     } catch (error) {
       console.error(`Error al actualizar el inventario: ${error.message}`);
@@ -79,8 +53,34 @@ export class InventarioManagerService {
    * @returns true si la operación fue exitosa, false en caso contrario
    */
   async registrarPrestamo(materialId: number, sitioId: number, cantidad: number): Promise<boolean> {
+    // Validar stock suficiente antes de prestar
+    const inventario = await this.inventarioService.findByMaterialAndSitio(materialId, sitioId);
+    if (!inventario || inventario.stock < cantidad) {
+      throw new BadRequestException(`Stock insuficiente en el sitio ${sitioId}. Stock actual: ${inventario?.stock ?? 0}, Cantidad solicitada: ${cantidad}`);
+    }
     // Un préstamo disminuye el stock
     return this.actualizarStock(materialId, sitioId, -cantidad);
+  }
+
+  /**
+   * Transfiere material de un sitio a otro
+   * @param materialId ID del material
+   * @param sitioOrigenId ID del sitio origen
+   * @param sitioDestinoId ID del sitio destino
+   * @param cantidad Cantidad a transferir
+   * @returns true si la operación fue exitosa, false en caso contrario
+   */
+  async transferirMaterial(materialId: number, sitioOrigenId: number, sitioDestinoId: number, cantidad: number): Promise<boolean> {
+    // Validar stock en el sitio origen
+    const inventarioOrigen = await this.inventarioService.findByMaterialAndSitio(materialId, sitioOrigenId);
+    if (!inventarioOrigen || inventarioOrigen.stock < cantidad) {
+      throw new BadRequestException(`Stock insuficiente en el sitio origen. Stock actual: ${inventarioOrigen?.stock ?? 0}, Cantidad a transferir: ${cantidad}`);
+    }
+    // Restar del origen
+    await this.actualizarStock(materialId, sitioOrigenId, -cantidad);
+    // Sumar al destino (crea inventario si no existe)
+    await this.actualizarStock(materialId, sitioDestinoId, cantidad);
+    return true;
   }
 
   /**

@@ -6,6 +6,10 @@ export class CreateInventarioDto {
   sitio_id: number;
 
   @IsInt()
+  @IsNotEmpty()
+  material_id: number;
+
+  @IsInt()
   @IsPositive()
   stock: number;
 

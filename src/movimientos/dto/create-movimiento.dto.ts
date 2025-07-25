@@ -25,19 +25,15 @@ export class CreateMovimientoDto {
 
   @IsNotEmpty()
   @IsNumber()
-  sitio_origen_id: number;
-  
-  @IsNotEmpty()
-  @IsNumber()
-  sitio_destino_id: number;
+  sitio_id: number;
   
   @IsOptional()
   @IsNumber()
-  responsable_id?: number;
-  
+  sitio_origen_id?: number;
+
   @IsOptional()
-  @IsString()
-  observaciones?: string;
+  @IsNumber()
+  sitio_destino_id?: number;
 
   @IsOptional()
   @IsString()

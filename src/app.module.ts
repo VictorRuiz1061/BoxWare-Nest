@@ -29,7 +29,6 @@ import { TransformInterceptor } from './common/interceptors';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { CaracteristicasModule } from './caracteristicas/caracteristicas.module';
 import { InventarioModule } from './inventario/inventario.module';
-import { UbicacionesModule } from './ubicaciones/ubicaciones.module';
 
 @Module({
   imports: [
@@ -65,7 +64,6 @@ import { UbicacionesModule } from './ubicaciones/ubicaciones.module';
     CaracteristicasModule,
     InventarioModule,
     SeedModule,
-    UbicacionesModule,
   ],
 
   controllers: [],

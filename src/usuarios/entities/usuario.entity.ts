@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Rol } from '../../roles/entities/role.entity';
+import { Movimiento } from '../../movimientos/entities/movimiento.entity';
+import { Ficha } from '../../fichas/entities/ficha.entity';
 
 @Entity('usuarios')
 export class Usuario {
@@ -36,10 +38,16 @@ export class Usuario {
   @CreateDateColumn()
   fecha_registro: Date;
 
-  @ManyToOne(() => Rol)
+  @ManyToOne(() => Rol, rol => rol.usuarios)
   @JoinColumn({ name: 'rol_id' })
   rol: Rol;
 
   @Column({ name: 'rol_id' })
   rol_id: number;
+
+  @OneToMany(() => Movimiento, movimiento => movimiento.usuario)
+  movimientos: Movimiento[];
+
+  @OneToMany(() => Ficha, ficha => ficha.usuario)
+  fichas: Ficha[];
 }

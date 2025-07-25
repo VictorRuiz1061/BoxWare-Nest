@@ -95,20 +95,10 @@ export class AuthController {
 
   @Post('restablecer')
   async resetPassword(@Body() dto: ResetPasswordDto) {
-    try {
-      // Primero verificar el código
-      const verificationResult = await this.authService.verifyCode(dto.email, dto.codigo);
-      
-      // Si el código es válido, cambiar la contraseña
-      return this.authService.resetPassword(verificationResult.token, dto.nuevaContrasena);
-    } catch (error) {
-      this.logger.error(`Error en restablecimiento de contraseña: ${error.message}`);
-      
-      if (error instanceof BadRequestException || error instanceof UnauthorizedException) {
-        throw error;
-      }
-      
-      throw new BadRequestException('Error al procesar la solicitud de restablecimiento de contraseña');
-    }
+    // Primero verificar el código
+    const verificationResult = await this.authService.verifyCode(dto.email, dto.codigo);
+    
+    // Si el código es válido, cambiar la contraseña
+    return this.authService.resetPassword(verificationResult.token, dto.nuevaContrasena);
   }
 }

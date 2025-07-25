@@ -13,7 +13,6 @@ interface VerificationCode {
   expiresAt: Date;
   userId: number;
   attempts: number;
-  usedForReset: boolean; // Nuevo campo para indicar si ya se usó para restablecer contraseña
 }
 
 @Injectable()
@@ -80,6 +79,8 @@ export class AuthService {
       nombre_rol: usuario.rol?.nombre_rol
     };
 
+    console.log('Generando token con payload:', payload);
+
     // Devolver token y datos del usuario
     return {
       access_token: this.jwtService.sign(payload),
@@ -143,8 +144,7 @@ export class AuthService {
       code: result.code,
       expiresAt,
       userId: usuario.id_usuario,
-      attempts: 0, // Contador de intentos fallidos
-      usedForReset: false // Inicialmente no se ha usado para restablecer contraseña
+      attempts: 0 // Contador de intentos fallidos
     });
 
     // Limpiar códigos expirados
@@ -200,10 +200,8 @@ export class AuthService {
       expiresIn: '5m', // Token válido por 5 minutos
     });
 
-    // No eliminamos el código para permitir múltiples usos
-    // Solo actualizamos el contador de intentos a 0 para reiniciar
-    storedData.attempts = 0;
-    this.verificationCodes.set(email, storedData);
+    // Eliminar el código usado
+    this.verificationCodes.delete(email);
 
     return {
       message: 'Código verificado correctamente',
@@ -257,15 +255,6 @@ export class AuthService {
       // Actualizar contraseña
       usuario.contrasena = newHash;
       await this.vendedorRepository.save(usuario);
-
-      // No eliminamos el código de verificación para permitir múltiples usos
-      // Opcionalmente, podríamos marcar que ya se usó para un restablecimiento
-      const email = payload.email;
-      const storedData = this.verificationCodes.get(email);
-      if (storedData) {
-        storedData.usedForReset = true;
-        this.verificationCodes.set(email, storedData);
-      }
 
       return { 
         message: 'Contraseña actualizada exitosamente',

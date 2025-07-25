@@ -8,13 +8,14 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Rol } from '../../roles/entities/role.entity';
+import { Modulo } from '../../modulos/entities/modulo.entity';
 
 @Entity('permisos')
 export class Permiso {
   @PrimaryGeneratedColumn()
   id_permiso: number;
 
-  @Column({ nullable: true })
+  @Column()
   nombre: string;
 
   @Column({ type: 'boolean', default: true })
@@ -35,8 +36,9 @@ export class Permiso {
   @CreateDateColumn()
   fecha_creacion: Date;
 
-  @Column('simple-array', { nullable: true })
-  modulo_id: number[];
+  @ManyToOne(() => Modulo, modulo => modulo.permisos)
+  @JoinColumn({ name: 'modulo_id' })
+  modulo_id: Modulo;
 
   @ManyToOne(() => Rol, rol => rol.permisos)
   @JoinColumn({ name: 'rol_id' })

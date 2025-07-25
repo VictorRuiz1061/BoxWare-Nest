@@ -15,54 +15,35 @@ export class Movimiento {
   @Column({ type: 'float', default: 0 })
   cantidad: number;
 
+  @Column({ type: 'int', nullable: true })
+  sitio_origen_id?: number;
+
+  @Column({ type: 'int', nullable: true })
+  sitio_destino_id?: number;
+
+  // Si necesitas un tercer sitio_id, descomenta la siguiente línea:
+  // @Column({ type: 'int', nullable: true })
+  // sitio_id_extra?: number;
+
   @CreateDateColumn()
   fecha_creacion: Date;
 
   @UpdateDateColumn()
   fecha_modificacion: Date;
 
-  @Column({ name: 'usuario_movimiento_id' })
-  usuario_movimiento_id: number;
-
-  @ManyToOne(() => Usuario)
+  @ManyToOne(() => Usuario, usuario => usuario.movimientos)
   @JoinColumn({ name: 'usuario_movimiento_id' })
   usuario: Usuario;
 
-  @Column({ name: 'tipo_movimiento_id' })
-  tipo_movimiento_id: number;
-
-  @ManyToOne(() => TipoMovimiento)
+  @ManyToOne(() => TipoMovimiento, tipo => tipo.movimientos)
   @JoinColumn({ name: 'tipo_movimiento_id' })
-  tipo_movimiento: TipoMovimiento;
+  tipo_movimiento_id: TipoMovimiento;
 
-  @Column({ name: 'material_id', nullable: true })
-  material_id: number;
-
-  @ManyToOne(() => Material, { nullable: true })
+  @ManyToOne(() => Material, material => material.movimientos, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'material_id' })
-  material: Material;
+  material_id: Material;
 
-  @Column({ name: 'sitio_origen_id', nullable: true })
-  sitio_origen_id: number;
-  
   @ManyToOne(() => Sitio, { nullable: true })
-  @JoinColumn({ name: 'sitio_origen_id' })
-  sitio_origen: Sitio;
-  
-  @Column({ name: 'sitio_destino_id', nullable: true })
-  sitio_destino_id: number;
-  
-  @ManyToOne(() => Sitio, { nullable: true })
-  @JoinColumn({ name: 'sitio_destino_id' })
-  sitio_destino: Sitio;
-  
-  @Column({ name: 'responsable_id', nullable: true })
-  responsable_id: number;
-  
-  @ManyToOne(() => Usuario, { nullable: true })
-  @JoinColumn({ name: 'responsable_id' })
-  responsable: Usuario;
-  
-  @Column({ nullable: true, type: 'text' })
-  observaciones: string;
+  @JoinColumn({ name: 'sitio_id' })
+  sitio: Sitio;
 }
