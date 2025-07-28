@@ -105,10 +105,12 @@ export class ImagenesService {
   /**
    * Construye la URL completa para acceder a una imagen
    * @param filename Nombre del archivo
-   * @param baseUrl URL base para acceder a las imu00e1genes
+   * @param baseUrl URL base para acceder a las imágenes
    * @returns URL completa de la imagen
    */
   getImageUrl(filename: string, baseUrl: string = this.baseUrl): string {
-    return `${baseUrl}/${filename}`;
+    // Obtener la URL base del servidor desde las variables de entorno
+    const serverUrl = process.env.SERVER_URL || 'http://localhost:3000';
+    return `${serverUrl}${baseUrl}/${filename}`;
   }
 }

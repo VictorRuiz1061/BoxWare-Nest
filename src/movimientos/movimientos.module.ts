@@ -7,11 +7,13 @@ import { Material } from '../materiales/entities/materiale.entity';
 import { MovimientosService } from './movimientos.service';
 import { MovimientosController } from './movimientos.controller';
 import { InventarioManagerModule } from '../common/modules/inventario-manager.module';
+import { AlertaManagerModule } from '../common/modules/alerta-manager.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Movimiento, Usuario, TipoMovimiento, Material]),
-    InventarioManagerModule // Importamos el módulo común de gestión de inventario
+    InventarioManagerModule, // Importamos el módulo común de gestión de inventario
+    AlertaManagerModule // Importamos el módulo común de gestión de alertas
   ],
   controllers: [MovimientosController],
   providers: [MovimientosService],

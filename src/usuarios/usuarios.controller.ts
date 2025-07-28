@@ -194,8 +194,26 @@ export class UsuariosController {
 
   @Put(':id')
   @RequirePermiso('usuarios', 'actualizar')
-  update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
-    return this.usuariosService.update(+id, updateUsuarioDto);
+  @UploadFile('imagen')
+  @UseInterceptors(FileResponseInterceptor)
+  async update(
+    @Param('id') id: string, 
+    @UploadedFile(new FileValidationPipe()) file: Express.Multer.File,
+    @Body() updateUsuarioDto: UpdateUsuarioDto
+  ) {
+    try {
+      if (file) {
+        const imageUrl = this.imagenesService.getImageUrl(
+          file.filename,
+          APP_CONSTANTS.IMAGES_BASE_URLS.USUARIOS
+        );
+        updateUsuarioDto.imagen = imageUrl;
+      }
+
+      return await this.usuariosService.update(+id, updateUsuarioDto);
+    } catch (error) {
+      throw new BadRequestException('Error al actualizar el usuario: ' + error.message);
+    }
   }
 
   @Delete(':id')

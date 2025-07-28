@@ -9,6 +9,7 @@ import { TipoMovimiento } from 'src/tipos-movimientos/entities/tipos-movimiento.
 import { Material } from '../materiales/entities/materiale.entity';
 import { Sitio } from '../sitios/entities/sitio.entity';
 import { InventarioManagerService } from '../common/services/inventario-manager.service';
+import { AlertaManagerService } from '../common/services/alerta-manager.service';
 
 @Injectable()
 export class MovimientosService {
@@ -22,6 +23,7 @@ export class MovimientosService {
     @InjectRepository(Material)
     private readonly materialRepo: Repository<Material>,
     private readonly inventarioManager: InventarioManagerService,
+    private readonly alertaManager: AlertaManagerService,
     private readonly entityManager: EntityManager
   ) {}
   
@@ -130,11 +132,37 @@ export class MovimientosService {
         dto.sitio_destino_id,
         dto.cantidad
       );
+      
+      // Crear alerta de transferencia
+      await this.alertaManager.alertarTransferencia(
+        material.id_material,
+        dto.sitio_origen_id,
+        dto.sitio_destino_id,
+        dto.cantidad,
+        dto.usuario_id
+      );
     } else {
       // Actualizar el stock del material usando el servicio común de gestión de inventario
       const stockActualizado = await this.actualizarStock(material, tipo, dto.cantidad, dto.sitio_id);
       if (!stockActualizado) {
         throw new BadRequestException('No se pudo actualizar el stock del material');
+      }
+      
+      // Crear alertas según el tipo de movimiento
+      if (this.esMovimientoEntrada(tipo)) {
+        await this.alertaManager.alertarDevolucion(
+          material.id_material,
+          dto.sitio_id,
+          dto.cantidad,
+          dto.usuario_id
+        );
+      } else if (this.esMovimientoSalida(tipo)) {
+        await this.alertaManager.alertarPrestamo(
+          material.id_material,
+          dto.sitio_id,
+          dto.cantidad,
+          dto.usuario_id
+        );
       }
     }
 

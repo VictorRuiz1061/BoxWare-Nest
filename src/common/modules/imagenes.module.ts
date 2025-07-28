@@ -4,7 +4,7 @@ import { diskStorage } from 'multer';
 import { ImagenesConfig } from '../interfaces/imagenes-config.interface';
 import { FileHelper } from '../utils/file-helper.util';
 import { ImagenesService } from '../services/imagenes.service';
-import { existsSync, mkdirSync } from 'fs';
+import { FileSystemUtil } from '../utils/file-system.util';
 
 /**
  * Módulo reutilizable para el manejo de imágenes
@@ -23,7 +23,13 @@ export class ImagenesModule {
       : config;
     
     // Asegurar que el directorio de destino exista
-    FileHelper.ensureDirectoryExists(imagenesConfig.destinationPath);
+    const directoryCreated = FileSystemUtil.ensureDirectoryExists(imagenesConfig.destinationPath);
+    
+    if (!directoryCreated) {
+      console.error(`❌ Error: No se pudo crear el directorio ${imagenesConfig.destinationPath}`);
+    } else {
+      console.log(`✅ Directorio de imágenes listo: ${imagenesConfig.destinationPath}`);
+    }
     
     // Crear instancia del servicio para configurar Multer
     const imagenesService = new ImagenesService();

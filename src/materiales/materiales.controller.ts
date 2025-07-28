@@ -60,8 +60,26 @@ export class MaterialesController {
 
   @Put(':id')
   @RequirePermiso('materiales', 'actualizar')
-  update(@Param('id') id: string, @Body() updateMaterialeDto: UpdateMaterialeDto) {
-    return this.materialesService.update(+id, updateMaterialeDto);
+  @UploadFile('imagen')
+  @UseInterceptors(FileResponseInterceptor)
+  async update(
+    @Param('id') id: string, 
+    @UploadedFile(new FileValidationPipe()) file: Express.Multer.File,
+    @Body() updateMaterialeDto: UpdateMaterialeDto
+  ) {
+    try {
+      if (file) {
+        const imageUrl = this.imagenesService.getImageUrl(
+          file.filename,
+          APP_CONSTANTS.IMAGES_BASE_URLS.MATERIALES
+        );
+        updateMaterialeDto.imagen = imageUrl;
+      }
+
+      return await this.materialesService.update(+id, updateMaterialeDto);
+    } catch (error) {
+      throw new BadRequestException('Error al actualizar el material: ' + error.message);
+    }
   }
 
   @Delete(':id')
