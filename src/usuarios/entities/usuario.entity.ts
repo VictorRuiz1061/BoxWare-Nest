@@ -17,10 +17,10 @@ export class Usuario {
   @Column()
   edad: number;
 
-  @Column({ length: 60 })
+  @Column({ length: 60 , unique: true })
   cedula: string;
 
-  @Column({ length: 254 })
+  @Column({ length: 254, unique: true })
   email: string;
 
   @Column()
