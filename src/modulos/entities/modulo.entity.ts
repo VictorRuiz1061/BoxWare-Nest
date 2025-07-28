@@ -3,6 +3,7 @@ import { Permiso } from '../../permisos/entities/permiso.entity';
 
 @Entity('modulos')
 export class Modulo {
+  [x: string]: any;
   @PrimaryGeneratedColumn()
   id_modulo: number;
 

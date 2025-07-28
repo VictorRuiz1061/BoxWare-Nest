@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { Permiso } from '../../permisos/entities/permiso.entity';
 import { Usuario } from '../../usuarios/entities/usuario.entity';
 import { Rol } from '../../roles/entities/role.entity';
+import { Modulo } from '../../modulos/entities/modulo.entity';
+import { IsArray } from 'class-validator';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -16,6 +18,8 @@ export class PermissionGuard implements CanActivate {
     private usuarioRepository: Repository<Usuario>,
     @InjectRepository(Rol)
     private rolRepository: Repository<Rol>,
+    @InjectRepository(Modulo)
+    private moduloRepository: Repository<Modulo>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -78,9 +82,17 @@ export class PermissionGuard implements CanActivate {
       where: {
         rol_id: { id_rol: usuarioCompleto.rol.id_rol },
       },
-      relations: ['modulo_id'],
+      select: ['id_permiso', 'nombre', 'modulo_id', 'puede_ver', 'puede_crear', 'puede_actualizar']
     });
     
+    for (const permiso of permisos) {
+      console.log(`Permiso encontrado: ${permiso.nombre} (ID: ${permiso.id_permiso})`);
+      if (permiso.modulo_id && Array.isArray(permiso.modulo_id)) {
+        console.log(`Módulos asociados: ${permiso.modulo_id.join(', ')}`);
+      } else {
+        console.log('No tiene módulos asociados');
+      }
+    }
     console.log(`Permisos encontrados: ${permisos.length}`);
     
     // Verificar si hay permisos para este rol
@@ -89,86 +101,127 @@ export class PermissionGuard implements CanActivate {
       return false; // No tiene ningún permiso asignado
     }
     
-    // Filtrar los permisos por el módulo correcto
-    console.log('Todos los permisos del usuario:', permisos.map(p => ({
-      id_permiso: p.id_permiso,
-      modulo: p.modulo_id?.rutas || 'sin módulo',
+    // Debug: mostrar permisos del usuario
+    console.log('Permisos del usuario:', permisos.map(p => ({
+      id: p.id_permiso,
+      nombre: p.nombre,
+      modulo: Array.isArray(p.modulo_id) ? `módulos: [${p.modulo_id.join(',')}]` : 'sin módulo',
       puede_ver: p.puede_ver,
       puede_crear: p.puede_crear,
       puede_actualizar: p.puede_actualizar,
-      puede_eliminar: p.puede_eliminar,
-      estado: p.estado
     })));
+
+    // Verificar permisos para la acción requerida
+    for (const p of permisos) {
+      // Verificar si alguno de los módulos del permiso coincide con el módulo requerido
+    console.log(`Buscando módulo con rutas o descripción_ruta: ${modulo}`);
     
-    const permisosModulo = permisos.filter(p => {
-      if (!p.modulo_id) {
-        console.log('Permiso sin módulo asociado');
-        return false;
-      }
-      
-      // Comparación más flexible: normalizar ambos valores a minúsculas y sin espacios
-      const rutaNormalizada = p.modulo_id.rutas.toLowerCase().trim();
-      const moduloNormalizado = modulo.toLowerCase().trim();
-      
-      // Verificar coincidencia exacta o si la ruta contiene el módulo
-      const coincideExacto = rutaNormalizada === moduloNormalizado;
-      const contiene = rutaNormalizada.includes(moduloNormalizado);
-      
-      console.log(`Módulo DB: '${p.modulo_id.rutas}' (${rutaNormalizada}) vs Requerido: '${modulo}' (${moduloNormalizado})`);
-      console.log(`Coincidencia exacta: ${coincideExacto}, Contiene: ${contiene}`);
-      
-      return coincideExacto || contiene;
-    });
-    
-    if (permisosModulo.length === 0) {
-      console.log(`No tiene permisos para el módulo: ${modulo}`);
-      return false; // No tiene permisos para este módulo
+    // Normalizar el nombre del módulo para buscarlo como '/modulo'
+    let moduloNombre = modulo;
+    if (!moduloNombre.startsWith('/')) {
+      moduloNombre = '/' + moduloNombre;
     }
 
-    // Verificar la acción específica en todos los permisos del módulo
-    for (const permiso of permisosModulo) {
-      console.log(`Verificando permiso: ${JSON.stringify({
-        puede_ver: permiso.puede_ver,
-        puede_crear: permiso.puede_crear,
-        puede_actualizar: permiso.puede_actualizar,
-        estado: permiso.estado
-      })}`);
+    // Buscar el módulo por 'rutas' o 'descripcion_ruta' exactamente
+    const moduloEntity = await this.moduloRepository.findOne({
+      where: [
+        { rutas: moduloNombre },
+        { descripcion_ruta: moduloNombre }
+      ]
+    });
+    if (!moduloEntity) {
+      console.log(`No se encontró el módulo '${moduloNombre}' en la base de datos. Denegando acceso.`);
+      return false;
+    }
+    const moduloId = moduloEntity.id_modulo;
+    
+    console.log(`ID del módulo '${modulo}': ${moduloId}`);
+
+    // Verificar que el ID del módulo sea válido y que el permiso tenga ese módulo
+    // Debug: Mostrar el tipo y valor exacto de modulo_id
+    console.log(`Tipo de modulo_id: ${typeof p.modulo_id}`);
+    console.log(`Valor de modulo_id:`, p.modulo_id);
+    
+    // Debug: Mostrar el tipo y valor exacto de moduloId
+    console.log(`Tipo de moduloId: ${typeof moduloId}`);
+    console.log(`Valor de moduloId: ${moduloId}`);
+    
+    // Debug: Mostrar cada elemento del array si es array
+    if (Array.isArray(p.modulo_id)) {
+      console.log('Elementos del array modulo_id:');
+      p.modulo_id.forEach((modId, index) => {
+        console.log(`Elemento ${index}:`, modId, `Tipo: ${typeof modId}`);
+      });
+    }
+    
+    // Función para verificar si tiene módulo
+    const verificarModulo = async (modId: string | number): Promise<boolean> => {
+      const modIdNum = typeof modId === 'string' ? parseInt(modId) : modId;
+      console.log(`Verificando módulo con ID: ${modIdNum} (${typeof modId})`);
       
-      // Verificar si el permiso está activo
-      if (permiso.estado !== true) {
-        console.log('El permiso no está activo');
-        continue; // Si el permiso no está activo, ignorarlo
+      // Si ya tenemos moduloId, simplemente comparamos
+      if (moduloId > 0) {
+        return modIdNum === moduloId;
       }
       
-      switch (accion) {
-        case 'ver':
-          if (permiso.puede_ver === true) {
-            console.log('Tiene permiso para ver');
-            return true;
-          }
-          break;
-        case 'crear':
-          if (permiso.puede_crear === true) {
-            console.log('Tiene permiso para crear');
-            return true;
-          }
-          break;
-        case 'actualizar':
-          if (permiso.puede_actualizar === true) {
-            console.log('Tiene permiso para actualizar');
-            return true;
-          }
-          break;
-        case 'eliminar':
-          if (permiso.puede_eliminar === true) {
-            console.log('Tiene permiso para eliminar');
-            return true;
-          }
-          break;
+      // Si no tenemos moduloId, buscamos el módulo en la base de datos
+      const moduloEntity = await this.moduloRepository.findOne({
+        where: { id_modulo: modIdNum }
+      });
+      
+      return moduloEntity !== null;
+    };
+
+    // Verificar cada módulo en el array
+    const tieneModulo = await Promise.all(
+      p.modulo_id.map(modId => verificarModulo(modId))
+    ).then(results => results.some(result => result));
+      
+    console.log(`Verificando módulo: ${modulo} (ID: ${moduloId}) en ${p.modulo_id}, tieneModulo: ${tieneModulo}`);
+
+      if (tieneModulo) {
+        // Debug: Mostrar el permiso completo
+        console.log('Permiso encontrado:', {
+          id: p.id_permiso,
+          nombre: p.nombre,
+          modulo_id: p.modulo_id,
+          puede_ver: p.puede_ver,
+          puede_crear: p.puede_crear,
+          puede_actualizar: p.puede_actualizar
+        });
+        
+        // Verificar la acción específica
+        console.log(`Verificando permiso: ${JSON.stringify({
+          puede_ver: p.puede_ver,
+          puede_crear: p.puede_crear,
+          puede_actualizar: p.puede_actualizar,
+          accion_requerida: accion
+        })}`);
+        
+        switch (accion) {
+          case 'ver':
+            if (p.puede_ver === true) {
+              console.log('✓ Permiso concedido para VER');
+              return true;
+            }
+            break;
+          case 'crear':
+            if (p.puede_crear === true) {
+              console.log('✓ Permiso concedido para CREAR');
+              return true;
+            }
+            break;
+          case 'actualizar':
+            if (p.puede_actualizar === true) {
+              console.log('✓ Permiso concedido para ACTUALIZAR');
+              return true;
+            }
+            break;
+        }
       }
     }
     
-    console.log('No tiene el permiso específico para la acción solicitada');
-    return false; // No tiene el permiso específico para la acción
+    console.log('No tiene permisos para la acción solicitada');
+    return false;
   }
 }
