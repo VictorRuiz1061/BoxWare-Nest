@@ -15,8 +15,18 @@ export class Movimiento {
   @Column({ type: 'float', default: 0 })
   cantidad: number;
 
+  @Column({ type: 'int', nullable: true })
+  sitio_origen_id?: number;
+
+  @Column({ type: 'int', nullable: true })
+  sitio_destino_id?: number;
+
+  // Si necesitas un tercer sitio_id, descomenta la siguiente línea:
+  // @Column({ type: 'int', nullable: true })
+  // sitio_id_extra?: number;
+
   @CreateDateColumn()
-  fecha_creacion: Date;2
+  fecha_creacion: Date;
 
   @UpdateDateColumn()
   fecha_modificacion: Date;
@@ -24,6 +34,10 @@ export class Movimiento {
   @ManyToOne(() => Usuario, usuario => usuario.movimientos)
   @JoinColumn({ name: 'usuario_movimiento_id' })
   usuario: Usuario;
+
+  @ManyToOne(() => Usuario, { nullable: true })
+  @JoinColumn({ name: 'usuario_responsable_id' })
+  usuario_responsable: Usuario | null;
 
   @ManyToOne(() => TipoMovimiento, tipo => tipo.movimientos)
   @JoinColumn({ name: 'tipo_movimiento_id' })

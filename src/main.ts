@@ -3,28 +3,22 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
 
 // Importar componentes comunes
 import { FileExceptionFilter, HttpExceptionFilter } from './common/filters';
 import { TransformInterceptor } from './common/interceptors';
 import { APP_CONSTANTS } from './common/constants';
+import { FileSystemUtil } from './common/utils/file-system.util';
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Asegurar que las carpetas de imágenes existan
-  const imagesPaths = [
-    APP_CONSTANTS.IMAGES_PATHS.MATERIALES,
-    APP_CONSTANTS.IMAGES_PATHS.USUARIOS
-  ];
+  // Asegurar que las carpetas de imágenes existan usando la utilidad
+  const directoriesCreated = FileSystemUtil.ensureImageDirectoriesExist();
   
-  // Crear las carpetas si no existen
-  imagesPaths.forEach(path => {
-    const fullPath = join(__dirname, '..', path);
-    if (!existsSync(fullPath)) {
-      mkdirSync(fullPath, { recursive: true });
-    }
-  });
+  if (!directoriesCreated) {
+  } else {
+  }
 
   // Configurar rutas estáticas para archivos
   app.useStaticAssets(join(__dirname, '..', APP_CONSTANTS.IMAGES_PATHS.MATERIALES), {

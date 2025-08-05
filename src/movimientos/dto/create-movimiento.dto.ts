@@ -11,6 +11,10 @@ export class CreateMovimientoDto {
   @IsNumber()
   usuario_id: number;
 
+  @IsOptional()
+  @IsNumber()
+  usuario_responsable_id?: number;
+
   @IsNotEmpty()
   @IsNumber()
   tipo_movimiento: number;
@@ -26,6 +30,14 @@ export class CreateMovimientoDto {
   @IsNotEmpty()
   @IsNumber()
   sitio_id: number;
+  
+  @IsOptional()
+  @IsNumber()
+  sitio_origen_id?: number;
+
+  @IsOptional()
+  @IsNumber()
+  sitio_destino_id?: number;
 
   @IsOptional()
   @IsString()

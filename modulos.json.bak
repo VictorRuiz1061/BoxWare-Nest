@@ -204,18 +204,6 @@
                 "fecha_creacion": "2025-06-01T06:49:05.299Z",
                 "es_submenu": true,
                 "modulo_padre_id": 4
-            },
-            {
-                "id_modulo": 18,
-                "fecha_accion": "2025-06-01T06:49:05.299Z",
-                "rutas": "/notificaciones",
-                "descripcion_ruta": "Notificaciones",
-                "mensaje_cambio": "notificaciones ",
-                "imagen": "bell",
-                "estado": true,
-                "fecha_creacion": "2025-06-01T06:46:05.299Z",
-                "es_submenu": true,
-                "modulo_padre_id": 4
             },{
                 "id_modulo": 1,
                 "fecha_accion": "2025-06-01T06:49:05.299Z",
@@ -247,28 +235,6 @@
                 "descripcion_ruta": "Ubicaciones",
                 "mensaje_cambio": "Principal",
                 "imagen": "building",
-                "estado": true,
-                "fecha_creacion": "2025-06-01T06:49:05.299Z",
-                "es_submenu": false,
-                "modulo_padre_id": null
-            },
-            {
-                "id_modulo": 21,
-                "fecha_accion": "2025-06-01T06:49:05.299Z",
-                "rutas": "Educación",
-                "descripcion_ruta": "Educación",
-                "mensaje_cambio": "Principal",
-                "imagen": "book-open",
-                "estado": true,
-                "fecha_creacion": "2025-06-01T06:49:05.299Z",
-                "es_submenu": false,
-                "modulo_padre_id": null
-            }
-        ],
-        "statusCode": 200,
-        "message": "Operación exitosa",
-        "timestamp": "2025-06-06T14:20:28.326Z"
-    },
     "statusCode": 200,
     "message": "Operación exitosa",
     "timestamp": "2025-06-06T14:20:28.326Z"

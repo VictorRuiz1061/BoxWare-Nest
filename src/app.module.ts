@@ -17,11 +17,12 @@ import { CategoriaElementosModule } from './categoria-elementos/categoria-elemen
 import { TipoMaterialesModule } from './tipo-materiales/tipo-materiales.module';
 import { MaterialesModule } from './materiales/materiales.module';
 import { AuthModule } from './auth/auth.module';
-import { InformesModule } from './informes/informes.module';
+// import { InformesModule } from './informes/informes.module';
 import { SeedModule } from './seeds/permisos/seed.module';
 
 // Importar módulos comunes
 import { ConfigModule, DatabaseModule } from './common/modules';
+import { NotificacionesManagerModule } from './common/modules/notificaciones-manager.module';
 import { PermissionModule } from './common/guards/permission.module';
 import { GlobalGuardsModule } from './common/guards/global-guards.module';
 import { HttpExceptionFilter } from './common/filters';
@@ -29,6 +30,8 @@ import { TransformInterceptor } from './common/interceptors';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { CaracteristicasModule } from './caracteristicas/caracteristicas.module';
 import { InventarioModule } from './inventario/inventario.module';
+
+
 
 @Module({
   imports: [
@@ -60,9 +63,10 @@ import { InventarioModule } from './inventario/inventario.module';
     TipoMaterialesModule, 
     MaterialesModule,
     AuthModule,
-    InformesModule,
+    // InformesModule,
     CaracteristicasModule,
     InventarioModule,
+    NotificacionesManagerModule,
     SeedModule,
   ],
 

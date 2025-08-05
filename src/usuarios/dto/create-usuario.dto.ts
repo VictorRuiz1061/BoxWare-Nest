@@ -37,9 +37,9 @@ export class CreateUsuarioDto {
 
   // El campo fecha_registro se genera automáticamente con @CreateDateColumn()
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
-  rol_id: number[];
+  rol_id?: number;
 
   @IsOptional()
   @IsString()

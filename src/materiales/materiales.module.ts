@@ -6,8 +6,8 @@ import { MaterialesController } from './materiales.controller';
 import { CategoriaElemento } from '../categoria-elementos/entities/categoria-elemento.entity';
 import { TipoMaterial } from 'src/tipo-materiales/entities/tipo-materiale.entity';
 import { Sitio } from '../sitios/entities/sitio.entity';
-// Importar el módulo de imágenes común
-import { ImagenesModule } from '../common/modules';
+// Importar los módulos comunes
+import { ImagenesModule, InventarioManagerModule } from '../common/modules';
 // Importar constantes
 import { APP_CONSTANTS } from '../common/constants';
 
@@ -20,6 +20,7 @@ import { APP_CONSTANTS } from '../common/constants';
       Sitio,
     ]),
      ImagenesModule.register(APP_CONSTANTS.IMAGES_PATHS.MATERIALES),
+     InventarioManagerModule,
     
   ],
   controllers: [MaterialesController],
