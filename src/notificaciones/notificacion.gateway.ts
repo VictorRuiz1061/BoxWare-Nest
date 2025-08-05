@@ -15,17 +15,17 @@ import { Notificacion } from './entities/notificacion.entity';
     origin: "*", // En producción, especifica el dominio de tu frontend
     methods: ["GET", "POST"]
   },
-  namespace: '/alertas'
+  namespace: '/Notificacion'
 })
-export class AlertaGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class NotificacionGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  private logger: Logger = new Logger('AlertaGateway');
+  private logger: Logger = new Logger('NotificacionGateway');
   private connectedClients: Map<string, Socket> = new Map();
 
   afterInit(server: Server) {
-    this.logger.log('Gateway de Alertas inicializado');
+    this.logger.log('Gateway de Notificacion inicializado');
   }
 
   handleConnection(client: Socket) {
@@ -34,7 +34,7 @@ export class AlertaGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     
     // Enviar mensaje de bienvenida
     client.emit('conexion_establecida', {
-      mensaje: 'Conectado al sistema de alertas',
+      mensaje: 'Conectado al sistema de Notificacion',
       timestamp: new Date().toISOString()
     });
   }
@@ -44,35 +44,35 @@ export class AlertaGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     this.connectedClients.delete(client.id);
   }
 
-  @SubscribeMessage('suscribir_alertas')
-  handleSuscribirAlertas(client: Socket, payload: any) {
-    this.logger.log(`Cliente ${client.id} se suscribió a las alertas`);
+  @SubscribeMessage('suscribir_Notificacions')
+  handleSuscribirNotificacions(client: Socket, payload: any) {
+    this.logger.log(`Cliente ${client.id} se suscribió a las Notificacion`);
     
-    // Unir al cliente a la sala de alertas
-    client.join('alertas_generales');
+    // Unir al cliente a la sala de Notificacion
+    client.join('Notificacions_generales');
     
     // Si se especifica un rol, unir a la sala específica del rol
     if (payload.rol) {
-      client.join(`alertas_rol_${payload.rol}`);
+      client.join(`Notificacions_rol_${payload.rol}`);
     }
     
     // Si se especifica un sitio, unir a la sala específica del sitio
     if (payload.sitio_id) {
-      client.join(`alertas_sitio_${payload.sitio_id}`);
+      client.join(`Notificacions_sitio_${payload.sitio_id}`);
     }
     
     client.emit('suscripcion_exitosa', {
-      mensaje: 'Suscripción a alertas exitosa',
+      mensaje: 'Suscripción a Notificacion exitosa',
       timestamp: new Date().toISOString()
     });
   }
 
-  @SubscribeMessage('desuscribir_alertas')
-  handleDesuscribirAlertas(client: Socket) {
-    this.logger.log(`Cliente ${client.id} se desuscribió de las alertas`);
+  @SubscribeMessage('desuscribir_Notificacions')
+  handleDesuscribirNotificacions(client: Socket) {
+    this.logger.log(`Cliente ${client.id} se desuscribió de las Notificacion`);
     
     // Salir de todas las salas conocidas
-    const salas = ['alertas_generales', 'alertas_administradores'];
+    const salas = ['Notificacions_generales', 'Notificacions_administradores'];
     salas.forEach(sala => {
       client.leave(sala);
     });
@@ -84,81 +84,81 @@ export class AlertaGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
     
     client.emit('desuscripcion_exitosa', {
-      mensaje: 'Desuscripción de alertas exitosa',
+      mensaje: 'Desuscripción de Notificacion exitosa',
       timestamp: new Date().toISOString()
     });
   }
 
-  @SubscribeMessage('marcar_alerta_leida')
-  handleMarcarAlertaLeida(client: Socket, payload: { alerta_id: number }) {
-    this.logger.log(`Cliente ${client.id} marcó la alerta ${payload.alerta_id} como leída`);
+  @SubscribeMessage('marcar_Notificacion_leida')
+  handleMarcarNotificacionLeida(client: Socket, payload: { Notificacion_id: number }) {
+    this.logger.log(`Cliente ${client.id} marcó la Notificacion ${payload.Notificacion_id} como leída`);
     
-    // Emitir evento para actualizar el estado de la alerta en todos los clientes
-    this.server.to('alertas_generales').emit('alerta_actualizada', {
-      alerta_id: payload.alerta_id,
+    // Emitir evento para actualizar el estado de la Notificacion en todos los clientes
+    this.server.to('Notificacions_generales').emit('Notificacion_actualizada', {
+      Notificacion_id: payload.Notificacion_id,
       estado: 'leida',
       timestamp: new Date().toISOString()
     });
   }
 
-  // Método para enviar alertas a todos los clientes conectados
-  async enviarAlerta(alerta: Notificacion) {
-    this.logger.log(`Enviando alerta: ${alerta.titulo}`);
+  // Método para enviar Notificacion a todos los clientes conectados
+  async enviarNotificacion(Notificacion: Notificacion) {
+    this.logger.log(`Enviando Notificacion: ${Notificacion.titulo}`);
     
     const payload = {
-      id: alerta.id_notificacion,
-      tipo: alerta.tipo,
-      nivel: alerta.nivel,
-      titulo: alerta.titulo,
-      mensaje: alerta.mensaje,
-      datos_adicionales: alerta.datos_adicionales,
-      material_id: alerta.material_id,
-      sitio_id: alerta.sitio_id,
-      movimiento_id: alerta.movimiento_id,
-      usuario_id: alerta.usuario_id,
-      fecha_creacion: alerta.fecha_creacion,
+      id: Notificacion.id_notificacion,
+      tipo: Notificacion.tipo,
+      nivel: Notificacion.nivel,
+      titulo: Notificacion.titulo,
+      mensaje: Notificacion.mensaje,
+      datos_adicionales: Notificacion.datos_adicionales,
+      material_id: Notificacion.material_id,
+      sitio_id: Notificacion.sitio_id,
+      movimiento_id: Notificacion.movimiento_id,
+      usuario_id: Notificacion.usuario_id,
+      fecha_creacion: Notificacion.fecha_creacion,
       timestamp: new Date().toISOString()
     };
 
     // Enviar a todos los clientes en la sala general
-    this.server.to('alertas_generales').emit('nueva_alerta', payload);
+    this.server.to('Notificacions_generales').emit('nueva_Notificacion', payload);
     
     // Enviar a clientes específicos según el rol (si aplica)
-    if (alerta.usuario_id) {
-      this.server.to(`alertas_usuario_${alerta.usuario_id}`).emit('nueva_alerta', payload);
+    if (Notificacion.usuario_id) {
+      this.server.to(`Notificacions_usuario_${Notificacion.usuario_id}`).emit('nueva_Notificacion', payload);
     }
     
     // Enviar a clientes específicos según el sitio (si aplica)
-    if (alerta.sitio_id) {
-      this.server.to(`alertas_sitio_${alerta.sitio_id}`).emit('nueva_alerta', payload);
+    if (Notificacion.sitio_id) {
+      this.server.to(`Notificacions_sitio_${Notificacion.sitio_id}`).emit('nueva_Notificacion', payload);
     }
     
-    // Marcar la alerta como enviada por WebSocket
-    alerta.enviada_websocket = true;
+    // Marcar la Notificacion como enviada por WebSocket
+    Notificacion.enviada_websocket = true;
   }
 
-  // Método para enviar alertas específicas por tipo
-  async enviarAlertaPorTipo(alerta: Notificacion, tipo: string) {
-    this.server.to(`alertas_tipo_${tipo}`).emit('nueva_alerta', {
-      id: alerta.id_notificacion,
-      tipo: alerta.tipo,
-      nivel: alerta.nivel,
-      titulo: alerta.titulo,
-      mensaje: alerta.mensaje,
-      datos_adicionales: alerta.datos_adicionales,
+  // Método para enviar Notificacion específicas por tipo
+  async enviarNotificacionPorTipo(Notificacion: Notificacion, tipo: string) {
+    this.server.to(`Notificacions_tipo_${tipo}`).emit('nueva_Notificacion', {
+      id: Notificacion.id_notificacion,
+      tipo: Notificacion.tipo,
+      nivel: Notificacion.nivel,
+      titulo: Notificacion.titulo,
+      mensaje: Notificacion.mensaje,
+      datos_adicionales: Notificacion.datos_adicionales,
       timestamp: new Date().toISOString()
     });
   }
 
-  // Método para enviar alertas críticas a administradores
-  async enviarAlertaCritica(alerta: Notificacion) {
-    this.server.to('alertas_administradores').emit('alerta_critica', {
-      id: alerta.id_notificacion,
-      tipo: alerta.tipo,
-      nivel: alerta.nivel,
-      titulo: alerta.titulo,
-      mensaje: alerta.mensaje,
-      datos_adicionales: alerta.datos_adicionales,
+  // Método para enviar Notificacion críticas a administradores
+  async enviarNotificacionCritica(Notificacion: Notificacion) {
+    this.server.to('Notificaciones_administradores').emit('Notificacion_critica', {
+      id: Notificacion.id_notificacion,
+      tipo: Notificacion.tipo,
+      nivel: Notificacion.nivel,
+      titulo: Notificacion.titulo,
+      mensaje: Notificacion.mensaje,
+      datos_adicionales: Notificacion.datos_adicionales,
       timestamp: new Date().toISOString()
     });
   }
@@ -174,7 +174,7 @@ export class AlertaGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   // Método para enviar notificación de sistema
   enviarNotificacionSistema(mensaje: string, tipo: 'info' | 'warning' | 'error' = 'info') {
-    this.server.to('alertas_generales').emit('notificacion_sistema', {
+    this.server.to('Notificaciones_generales').emit('notificacion_sistema', {
       mensaje,
       tipo,
       timestamp: new Date().toISOString()
