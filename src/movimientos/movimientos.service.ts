@@ -9,6 +9,7 @@ import { TipoMovimiento } from 'src/tipos-movimientos/entities/tipos-movimiento.
 import { Material } from '../materiales/entities/materiale.entity';
 import { Sitio } from '../sitios/entities/sitio.entity';
 import { InventarioManagerService } from '../common/services/inventario-manager.service';
+import { NotificacionesManagerService } from '../common/services/notificaciones-manager.service';
 
 @Injectable()
 export class MovimientosService {
@@ -22,6 +23,7 @@ export class MovimientosService {
     @InjectRepository(Material)
     private readonly materialRepo: Repository<Material>,
     private readonly inventarioManager: InventarioManagerService,
+    private readonly notificacionesManager: NotificacionesManagerService,
     private readonly entityManager: EntityManager
   ) {}
   
@@ -33,10 +35,8 @@ export class MovimientosService {
   private esMovimientoEntrada(tipoMovimiento: TipoMovimiento): boolean {
     const tipoNombre = tipoMovimiento.tipo_movimiento.toLowerCase();
     return tipoNombre.includes('entrada') || 
-           tipoNombre.includes('ingreso') || 
-           tipoNombre.includes('adicion') || 
            tipoNombre.includes('devolucion');
-  }
+}
   
   /**
    * Determina si un tipo de movimiento es una salida de material
@@ -46,7 +46,7 @@ export class MovimientosService {
   private esMovimientoSalida(tipoMovimiento: TipoMovimiento): boolean {
     const tipoNombre = tipoMovimiento.tipo_movimiento.toLowerCase();
     return tipoNombre.includes('salida') || 
-           tipoNombre.includes('egreso') || 
+           tipoNombre.includes('prestamo') || 
            tipoNombre.includes('retiro');
   }
   
@@ -69,6 +69,7 @@ export class MovimientosService {
       return await this.inventarioManager.registrarDevolucion(material.id_material, sitioId, cantidad);
     } else if (this.esMovimientoSalida(tipoMovimiento)) {
       // Para movimientos de salida, disminuir el stock
+      // Ahora valida el stock suficiente antes de prestar
       return await this.inventarioManager.registrarPrestamo(material.id_material, sitioId, cantidad);
     } else {
       // Si no es entrada ni salida, lanzar error
@@ -106,6 +107,13 @@ export class MovimientosService {
     const usuario = await this.usuarioRepo.findOneBy({ id_usuario: dto.usuario_id });
     if (!usuario) throw new NotFoundException(`Usuario con ID ${dto.usuario_id} no encontrado`);
 
+    // Validar usuario responsable si se proporciona
+    let usuarioResponsable: Usuario | null = null;
+    if (dto.usuario_responsable_id) {
+      usuarioResponsable = await this.usuarioRepo.findOneBy({ id_usuario: dto.usuario_responsable_id });
+      if (!usuarioResponsable) throw new NotFoundException(`Usuario responsable con ID ${dto.usuario_responsable_id} no encontrado`);
+    }
+
     // Validar tipo de movimiento
     const tipo = await this.tipoMovimientoRepo.findOneBy({ id_tipo_movimiento: dto.tipo_movimiento });
     if (!tipo) throw new NotFoundException(`TipoMovimiento con ID ${dto.tipo_movimiento} no encontrado`);
@@ -119,44 +127,92 @@ export class MovimientosService {
       throw new BadRequestException('La cantidad debe ser mayor que cero');
     }
 
-    // Actualizar el stock del material usando el servicio común de gestión de inventario
-    const stockActualizado = await this.actualizarStock(material, tipo, dto.cantidad, dto.sitio_id);
-    
-    if (!stockActualizado) {
-      throw new BadRequestException('No se pudo actualizar el stock del material');
+    // Si es préstamo o devolución, transferir entre dos sitios
+    const tipoNombre = tipo.tipo_movimiento.toLowerCase();
+    if (tipoNombre.includes('prestamo') || tipoNombre.includes('devolucion')) {
+      if (!dto.sitio_origen_id || !dto.sitio_destino_id) {
+        throw new BadRequestException('Para movimientos de préstamo o devolución se requieren sitio_origen_id y sitio_destino_id');
+      }
+      await this.inventarioManager.transferirMaterial(
+        material.id_material,
+        dto.sitio_origen_id,
+        dto.sitio_destino_id,
+        dto.cantidad
+      );
+      
+      // Crear alerta de transferencia
+      await this.notificacionesManager.alertarTransferencia(
+        material.id_material,
+        dto.sitio_origen_id,
+        dto.sitio_destino_id,
+        dto.cantidad,
+        dto.usuario_id
+      );
+    } else {
+      // Actualizar el stock del material usando el servicio común de gestión de inventario
+      const stockActualizado = await this.actualizarStock(material, tipo, dto.cantidad, dto.sitio_id);
+      if (!stockActualizado) {
+        throw new BadRequestException('No se pudo actualizar el stock del material');
+      }
+      
+      // Crear alertas según el tipo de movimiento
+      if (this.esMovimientoEntrada(tipo)) {
+        await this.notificacionesManager.alertarDevolucion(
+          material.id_material,
+          dto.sitio_id,
+          dto.cantidad,
+          dto.usuario_id
+        );
+      } else if (this.esMovimientoSalida(tipo)) {
+        await this.notificacionesManager.alertarPrestamo(
+          material.id_material,
+          dto.sitio_id,
+          dto.cantidad,
+          dto.usuario_id
+        );
+      }
     }
 
     // Crear y guardar el movimiento
     const nuevo = this.movimientoRepo.create();
     nuevo.estado = dto.estado;
     nuevo.usuario = usuario;
+    nuevo.usuario_responsable = usuarioResponsable;
     nuevo.tipo_movimiento_id = tipo;
     nuevo.material_id = material;
     nuevo.cantidad = dto.cantidad;
-    
-    // Guardar la referencia al sitio
+
+    // Guardar la referencia al sitio (para movimientos normales)
     if (dto.sitio_id) {
-      // Buscar el sitio por su ID
       const sitio = await this.entityManager.findOne(Sitio, {
         where: { id_sitio: dto.sitio_id }
       });
-      
       if (sitio) {
         nuevo.sitio = sitio;
       }
+    }
+
+    // Guardar los sitios de origen y destino si aplica
+    if (dto.sitio_origen_id) {
+      nuevo.sitio_origen_id = dto.sitio_origen_id;
+    }
+    if (dto.sitio_destino_id) {
+      nuevo.sitio_destino_id = dto.sitio_destino_id;
     }
 
     return this.movimientoRepo.save(nuevo);
   }
 
   async findAll(): Promise<Movimiento[]> {
-    return this.movimientoRepo.find({ relations: ['usuario', 'tipo_movimiento_id'] });
+    return this.movimientoRepo.find({ 
+      relations: ['usuario', 'usuario_responsable', 'tipo_movimiento_id', 'material_id', 'sitio'] 
+    });
   }
 
   async findOne(id: number): Promise<Movimiento> {
     const movimiento = await this.movimientoRepo.findOne({
       where: { id_movimiento: id },
-      relations: ['usuario', 'tipo_movimiento_id'],
+      relations: ['usuario', 'usuario_responsable', 'tipo_movimiento_id', 'material_id', 'sitio'],
     });
     if (!movimiento) throw new NotFoundException(`Movimiento con ID ${id} no encontrado`);
     return movimiento;
@@ -166,7 +222,7 @@ export class MovimientosService {
     // Obtener el movimiento original con todas sus relaciones
     const movimientoOriginal = await this.movimientoRepo.findOne({
       where: { id_movimiento: id },
-      relations: ['usuario', 'tipo_movimiento_id', 'material_id'],
+      relations: ['usuario', 'usuario_responsable', 'tipo_movimiento_id', 'material_id'],
     });
     
     if (!movimientoOriginal) {
@@ -187,6 +243,17 @@ export class MovimientosService {
       const usuario = await this.usuarioRepo.findOneBy({ id_usuario: dto.usuario_id });
       if (!usuario) throw new NotFoundException(`Usuario con ID ${dto.usuario_id} no encontrado`);
       movimientoOriginal.usuario = usuario;
+    }
+
+    // Actualizar usuario responsable si es necesario
+    if (dto.usuario_responsable_id !== undefined) {
+      if (dto.usuario_responsable_id) {
+        const usuarioResponsable = await this.usuarioRepo.findOneBy({ id_usuario: dto.usuario_responsable_id });
+        if (!usuarioResponsable) throw new NotFoundException(`Usuario responsable con ID ${dto.usuario_responsable_id} no encontrado`);
+        movimientoOriginal.usuario_responsable = usuarioResponsable;
+      } else {
+        movimientoOriginal.usuario_responsable = null;
+      }
     }
 
     // Actualizar tipo de movimiento si es necesario
@@ -263,4 +330,11 @@ export class MovimientosService {
       throw new NotFoundException(`Movimiento con ID ${id} no encontrado`);
     }
   }
+
+  /**
+   * Para transferir materiales entre sitios, se debe usar el método transferirMaterial del InventarioManagerService
+   * Ejemplo de uso:
+   * await this.inventarioManager.transferirMaterial(materialId, sitioOrigenId, sitioDestinoId, cantidad);
+   * Esto validará el stock y actualizará ambos inventarios correctamente.
+   */
 }

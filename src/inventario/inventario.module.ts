@@ -6,10 +6,12 @@ import { Inventario } from './entities/inventario.entity';
 import { Material } from '../materiales/entities/materiale.entity';
 import { Sitio } from '../sitios/entities/sitio.entity';
 import { Caracteristica } from 'src/caracteristicas/entities/caracteristica.entity';
+import { NotificacionesManagerModule } from '../common/modules/notificaciones-manager.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Inventario, Material, Sitio, Caracteristica])
+    TypeOrmModule.forFeature([Inventario, Material, Sitio, Caracteristica]),
+    NotificacionesManagerModule
   ],
   controllers: [InventarioController],
   providers: [InventarioService],

@@ -1,17 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Put,
-  Param,
-  Delete,
-  UseInterceptors,
-  UploadedFile,
-  ParseIntPipe,
-  BadRequestException,
-  UseGuards
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete,
+  UseInterceptors, UploadedFile, BadRequestException, UseGuards } from '@nestjs/common';
 import { MaterialesService } from './materiales.service';
 import { CreateMaterialeDto } from './dto/create-materiale.dto';
 import { UpdateMaterialeDto } from './dto/update-materiale.dto';
@@ -72,13 +60,57 @@ export class MaterialesController {
 
   @Put(':id')
   @RequirePermiso('materiales', 'actualizar')
-  update(@Param('id') id: string, @Body() updateMaterialeDto: UpdateMaterialeDto) {
-    return this.materialesService.update(+id, updateMaterialeDto);
+  @UploadFile('imagen')
+  @UseInterceptors(FileResponseInterceptor)
+  async update(
+    @Param('id') id: string, 
+    @UploadedFile(new FileValidationPipe()) file: Express.Multer.File,
+    @Body() updateMaterialeDto: UpdateMaterialeDto
+  ) {
+    try {
+      if (file) {
+        const imageUrl = this.imagenesService.getImageUrl(
+          file.filename,
+          APP_CONSTANTS.IMAGES_BASE_URLS.MATERIALES
+        );
+        updateMaterialeDto.imagen = imageUrl;
+      }
+
+      return await this.materialesService.update(+id, updateMaterialeDto);
+    } catch (error) {
+      throw new BadRequestException('Error al actualizar el material: ' + error.message);
+    }
   }
 
   @Delete(':id')
   @RequirePermiso('materiales', 'actualizar')
   remove(@Param('id') id: string) {
     return this.materialesService.remove(+id);
+  }
+
+  /**
+   * Endpoint para actualizar el stock de un material
+   * @param id ID del material
+   * @param datos Datos para actualizar el stock
+   * @returns Resultado de la operación
+   */
+  @Post(':id/actualizar-stock')
+  @RequirePermiso('materiales', 'actualizar')
+  actualizarStock(
+    @Param('id') id: string, 
+    @Body() datos: {
+      sitio_id: number;
+      cantidad: number;
+      placa_sena?: string;
+      descripcion?: string;
+    }
+  ) {
+    return this.materialesService.actualizarStockMaterial(
+      +id, 
+      datos.sitio_id, 
+      datos.cantidad,
+      datos.placa_sena,
+      datos.descripcion
+    );
   }
 }

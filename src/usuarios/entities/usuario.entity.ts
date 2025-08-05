@@ -40,10 +40,10 @@ export class Usuario {
 
   @ManyToOne(() => Rol, rol => rol.usuarios)
   @JoinColumn({ name: 'rol_id' })
-  rol: Rol;
+  rol?: Rol;
 
   @Column({ name: 'rol_id' })
-  rol_id: number;
+  rol_id?: number;
 
   @OneToMany(() => Movimiento, movimiento => movimiento.usuario)
   movimientos: Movimiento[];

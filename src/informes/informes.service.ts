@@ -248,7 +248,6 @@ export class InformesService {
       
       return query.getRawMany();
     } catch (error) {
-      console.error('Error en getTransferenciasSedes:', error);
       throw new Error('Error al obtener transferencias entre sedes');
     }
   }
