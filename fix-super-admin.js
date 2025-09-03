@@ -22,12 +22,12 @@ const client = new Client({
 
 // Datos del Super Administrador desde variables de entorno
 const SUPER_ADMIN_ROLE = process.env.SEED_ROLE_ADMIN || 'Super Administrador';
-const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'brand@admin.com';
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'passwordd';
-const ADMIN_NOMBRE = process.env.SEED_ADMIN_NOMBRE || 'brandonnn';
-const ADMIN_APELLIDO = process.env.SEED_ADMIN_APELLIDO || 'gomezzzz';
-const ADMIN_EDAD = process.env.SEED_ADMIN_EDAD || '15';
-const ADMIN_CEDULA = process.env.SEED_ADMIN_CEDULA || '1083984508';
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@admin.com';
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'admin';
+const ADMIN_NOMBRE = process.env.SEED_ADMIN_NOMBRE || 'admin';
+const ADMIN_APELLIDO = process.env.SEED_ADMIN_APELLIDO || 'admin';
+const ADMIN_EDAD = process.env.SEED_ADMIN_EDAD || '20';
+const ADMIN_CEDULA = process.env.SEED_ADMIN_CEDULA || '000000000';
 const ADMIN_TELEFONO = process.env.SEED_ADMIN_TELEFONO || '0000000000';
 
 async function main() {

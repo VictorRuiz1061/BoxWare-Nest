@@ -1,35 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import { AlertasService } from '../../alertas/alertas.service';
-import { TipoAlerta, NivelAlerta } from '../../alertas/entities/alerta.entity';
+import { NotificacionesService } from '../../notificaciones/notificacion.service';
+import { TipoNotificacion, NivelNotificacion } from '../../notificaciones/entities/notificacion.entity';
 
 /**
- * Servicio común para la gestión de alertas del sistema
- * Proporciona métodos para crear alertas automáticas basadas en eventos del sistema
+ * Servicio común para la gestión de notificaciones del sistema
+ * Proporciona métodos para crear notificaciones automáticas basadas en eventos del sistema
  */
 @Injectable()
-export class AlertaManagerService {
-  constructor(private readonly alertasService: AlertasService) {}
+export class NotificacionesManagerService {
+  constructor(private readonly notificacionesService: NotificacionesService) {}
 
   /**
-   * Verifica si se debe crear una alerta de stock bajo
+   * Verifica si se debe crear una notificación de stock bajo
    * @param materialId ID del material
    * @param sitioId ID del sitio
    * @param stockActual Stock actual del material
    * @param stockMinimo Stock mínimo recomendado (por defecto 5)
-   * @returns true si se creó la alerta, false en caso contrario
+   * @returns true si se creó la notificación, false en caso contrario
    */
   async verificarStockBajo(
     materialId: number, 
     sitioId: number, 
     stockActual: number, 
-    stockMinimo: number = 5
+    stockMinimo: number = 5,
+    areaId?: number
   ): Promise<boolean> {
     if (stockActual <= stockMinimo) {
-      await this.alertasService.crearAlertaStockBajo(
+      await this.notificacionesService.crearNotificacionStockBajo(
         materialId, 
         sitioId, 
         stockActual, 
-        stockMinimo
+        stockMinimo,
+        areaId
       );
       return true;
     }
@@ -37,152 +39,152 @@ export class AlertaManagerService {
   }
 
   /**
-   * Crea una alerta de préstamo
+   * Crea una notificación de préstamo
    * @param materialId ID del material
    * @param sitioId ID del sitio
    * @param cantidad Cantidad prestada
-   * @param usuarioId ID del usuario que realiza el préstamo
+   * @param areaId ID del área asociada al préstamo
    */
   async alertarPrestamo(
     materialId: number, 
     sitioId: number, 
     cantidad: number, 
-    usuarioId: number
+    areaId: number
   ): Promise<void> {
-    await this.alertasService.crearAlertaPrestamo(
+    await this.notificacionesService.crearNotificacionPrestamo(
       materialId, 
       sitioId, 
       cantidad, 
-      usuarioId
+      areaId
     );
   }
 
   /**
-   * Crea una alerta de devolución
+   * Crea una notificación de devolución
    * @param materialId ID del material
    * @param sitioId ID del sitio
    * @param cantidad Cantidad devuelta
-   * @param usuarioId ID del usuario que realiza la devolución
+   * @param areaId ID del área asociada a la devolución
    */
   async alertarDevolucion(
     materialId: number, 
     sitioId: number, 
     cantidad: number, 
-    usuarioId: number
+    areaId: number
   ): Promise<void> {
-    await this.alertasService.crearAlertaDevolucion(
+    await this.notificacionesService.crearNotificacionDevolucion(
       materialId, 
       sitioId, 
       cantidad, 
-      usuarioId
+      areaId
     );
   }
 
   /**
-   * Crea una alerta de transferencia
+   * Crea una notificación de transferencia
    * @param materialId ID del material
    * @param sitioOrigenId ID del sitio origen
    * @param sitioDestinoId ID del sitio destino
    * @param cantidad Cantidad transferida
-   * @param usuarioId ID del usuario que realiza la transferencia
+   * @param areaId ID del área asociada a la transferencia
    */
   async alertarTransferencia(
     materialId: number, 
     sitioOrigenId: number, 
     sitioDestinoId: number, 
     cantidad: number, 
-    usuarioId: number
+    areaId: number
   ): Promise<void> {
-    await this.alertasService.crearAlertaTransferencia(
+    await this.notificacionesService.crearNotificacionTransferencia(
       materialId, 
       sitioOrigenId, 
       sitioDestinoId, 
       cantidad, 
-      usuarioId
+      areaId
     );
   }
 
   /**
-   * Crea una alerta de material nuevo
+   * Crea una notificación de material nuevo
    * @param materialId ID del material
    * @param sitioId ID del sitio
    * @param cantidad Cantidad inicial
-   * @param usuarioId ID del usuario que registra el material
+   * @param areaId ID del área asociada al registro del material
    */
   async alertarMaterialNuevo(
     materialId: number, 
     sitioId: number, 
     cantidad: number, 
-    usuarioId: number
+    areaId: number
   ): Promise<void> {
-    await this.alertasService.crearAlertaMaterialNuevo(
+    await this.notificacionesService.crearNotificacionMaterialNuevo(
       materialId, 
       sitioId, 
       cantidad, 
-      usuarioId
+      areaId
     );
   }
 
   /**
-   * Crea una alerta de movimiento crítico
+   * Crea una notificación de movimiento crítico
    * @param materialId ID del material
    * @param sitioId ID del sitio
    * @param tipoMovimiento Tipo de movimiento
    * @param cantidad Cantidad del movimiento
-   * @param usuarioId ID del usuario que realiza el movimiento
+   * @param areaId ID del área asociada al movimiento
    */
   async alertarMovimientoCritico(
     materialId: number, 
     sitioId: number, 
     tipoMovimiento: string, 
     cantidad: number, 
-    usuarioId: number
+    areaId: number
   ): Promise<void> {
-    await this.alertasService.crearAlertaMovimientoCritico(
+    await this.notificacionesService.crearNotificacionMovimientoCritico(
       materialId, 
       sitioId, 
       tipoMovimiento, 
       cantidad, 
-      usuarioId
+      areaId
     );
   }
 
   /**
-   * Crea una alerta del sistema
-   * @param titulo Título de la alerta
-   * @param mensaje Mensaje de la alerta
-   * @param nivel Nivel de la alerta (info, warning, error, critical)
+   * Crea una notificación del sistema
+   * @param titulo Título de la notificación
+   * @param mensaje Mensaje de la notificación
+   * @param nivel Nivel de la notificación (info, warning, error, critical)
    */
   async alertarSistema(
     titulo: string, 
     mensaje: string, 
-    nivel: NivelAlerta = NivelAlerta.INFO
+    nivel: NivelNotificacion = NivelNotificacion.INFO
   ): Promise<void> {
-    await this.alertasService.crearAlertaSistema(titulo, mensaje, nivel);
+    await this.notificacionesService.crearNotificacionSistema(titulo, mensaje, nivel);
   }
 
   /**
-   * Crea una alerta personalizada
-   * @param tipo Tipo de alerta
-   * @param titulo Título de la alerta
-   * @param mensaje Mensaje de la alerta
-   * @param nivel Nivel de la alerta
+   * Crea una notificación personalizada
+   * @param tipo Tipo de notificación
+   * @param titulo Título de la notificación
+   * @param mensaje Mensaje de la notificación
+   * @param nivel Nivel de la notificación
    * @param datosAdicionales Datos adicionales
    * @param materialId ID del material (opcional)
    * @param sitioId ID del sitio (opcional)
-   * @param usuarioId ID del usuario (opcional)
+   * @param areaId ID del área (opcional)
    */
-  async crearAlertaPersonalizada(
-    tipo: TipoAlerta,
+  async crearNotificacionPersonalizada(
+    tipo: TipoNotificacion,
     titulo: string,
     mensaje: string,
-    nivel: NivelAlerta = NivelAlerta.INFO,
+    nivel: NivelNotificacion = NivelNotificacion.INFO,
     datosAdicionales?: any,
     materialId?: number,
     sitioId?: number,
-    usuarioId?: number
+    areaId?: number
   ): Promise<void> {
-    await this.alertasService.create({
+    await this.notificacionesService.create({
       tipo,
       nivel,
       titulo,
@@ -190,44 +192,46 @@ export class AlertaManagerService {
       datos_adicionales: datosAdicionales,
       material_id: materialId,
       sitio_id: sitioId,
-      usuario_id: usuarioId
+      area_id: areaId
     });
   }
 
   /**
-   * Verifica y crea alertas automáticas basadas en el stock
+   * Verifica y crea notificaciones automáticas basadas en el stock
    * @param materialId ID del material
    * @param sitioId ID del sitio
    * @param stockActual Stock actual
    * @param stockAnterior Stock anterior (para comparar)
    * @param stockMinimo Stock mínimo
+   * @param areaId ID del área asociada (opcional)
    */
   async verificarAlertasStock(
     materialId: number,
     sitioId: number,
     stockActual: number,
     stockAnterior: number,
-    stockMinimo: number = 5
+    stockMinimo: number = 5,
+    areaId?: number
   ): Promise<void> {
     // Verificar si el stock está bajo
-    await this.verificarStockBajo(materialId, sitioId, stockActual, stockMinimo);
+    await this.verificarStockBajo(materialId, sitioId, stockActual, stockMinimo, areaId);
 
-    // Si el stock se agotó completamente, crear alerta crítica
+    // Si el stock se agotó completamente, crear notificación crítica
     if (stockActual === 0 && stockAnterior > 0) {
       await this.alertarSistema(
         'Stock Agotado',
         `El material ${materialId} en el sitio ${sitioId} se ha agotado completamente`,
-        NivelAlerta.CRITICAL
+        NivelNotificacion.ERROR
       );
     }
 
-    // Si el stock se redujo significativamente, crear alerta de advertencia
+    // Si el stock se redujo significativamente, crear notificación de advertencia
     if (stockActual < stockAnterior && stockActual <= stockMinimo * 2) {
       await this.alertarSistema(
         'Reducción Significativa de Stock',
         `El stock del material ${materialId} en el sitio ${sitioId} se ha reducido significativamente. Stock actual: ${stockActual}`,
-        NivelAlerta.WARNING
+        NivelNotificacion.WARNING
       );
     }
   }
-} 
+}

@@ -1,4 +1,3 @@
-// src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -17,7 +16,7 @@ import { JwtAuthGuard } from '../common/guards';
     // Usar el módulo de autenticación común
     AuthCommonModule.register({
       secret: process.env.JWT_SECRET || 'your_super_secret_key_here',
-      expiresIn: process.env.JWT_EXPIRATION_TIME || '1d',
+      expiresIn: process.env.JWT_EXPIRATION_TIME || '15m',
     }),
     TypeOrmModule.forFeature([Usuario]),
     UsuariosModule,

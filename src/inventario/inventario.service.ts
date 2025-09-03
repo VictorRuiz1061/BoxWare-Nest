@@ -5,7 +5,8 @@ import { CreateInventarioDto } from './dto/create-inventario.dto';
 import { UpdateInventarioDto } from './dto/update-inventario.dto';
 import { Inventario } from './entities/inventario.entity';
 import { Sitio } from '../sitios/entities/sitio.entity';
-import { AlertaManagerService } from '../common/services/alerta-manager.service';
+import { NotificacionesManagerService } from '../common/services/notificaciones-manager.service';
+import { Material } from 'src/materiales/entities/materiale.entity';
 
 @Injectable()
 export class InventarioService {
@@ -14,27 +15,56 @@ export class InventarioService {
     private readonly inventarioRepo: Repository<Inventario>,
     @InjectRepository(Sitio)
     private readonly sitioRepo: Repository<Sitio>,
-    private readonly alertaManager: AlertaManagerService
+    @InjectRepository(Material)
+    private readonly materialRepo: Repository<Material>,
+    private readonly notificacionesManager: NotificacionesManagerService,
   ) {}
 
   async create(createInventarioDto: CreateInventarioDto): Promise<Inventario> {
+    // --- Inicio de la depuración ---
+    console.log('--- DEBUG: Datos recibidos en el servicio ---', createInventarioDto);
+    // --- Fin de la depuración ---
+
     const { sitio_id, material_id, stock, placa_sena, descripcion } = createInventarioDto;
+
+    const material = await this.materialRepo.findOne({
+      where: { id_material: material_id },
+      relations: ['caracteristicas'],
+    });
+
+    if (!material) {
+      throw new NotFoundException(`Material con ID ${material_id} no encontrado`);
+    }
+
+    // --- Inicio de la depuración ---
+    console.log('--- DEBUG: Material y características encontradas ---', JSON.stringify(material, null, 2));
+    // --- Fin de la depuración ---
+
+    // Lógica de validación mejorada
+    if (material.caracteristicas && material.caracteristicas.length > 0) {
+      const requierePlaca = material.caracteristicas.some(c => c.placa_sena === true);
+      const requiereDescripcion = material.caracteristicas.some(c => c.descripcion === true);
+
+      if (requierePlaca && (!placa_sena || placa_sena.trim() === '')) {
+        throw new BadRequestException('El campo placa_sena es requerido para este material.');
+      }
+      if (requiereDescripcion && (!descripcion || descripcion.trim() === '')) {
+        throw new BadRequestException('El campo descripcion es requerido para este material.');
+      }
+    }
 
     const sitio = await this.sitioRepo.findOneBy({ id_sitio: sitio_id });
     if (!sitio) throw new NotFoundException(`Sitio con ID ${sitio_id} no encontrado`);
 
-    // Buscar si ya existe inventario para ese material y sitio
     let inventario = await this.inventarioRepo.findOne({ where: { sitio: { id_sitio: sitio_id }, material_id } });
     let stockAnterior = 0;
     
     if (inventario) {
-      // Si ya existe, solo actualiza el stock
       stockAnterior = inventario.stock;
       inventario.stock += stock;
     } else {
       inventario = this.inventarioRepo.create({ sitio, material_id, stock });
-      // Crear alerta de material nuevo
-      await this.alertaManager.alertarMaterialNuevo(material_id, sitio_id, stock, 1); // Usuario ID 1 por defecto
+      await this.notificacionesManager.alertarMaterialNuevo(material_id, sitio_id, stock, 1);
     }
 
     if (placa_sena) {
@@ -46,9 +76,8 @@ export class InventarioService {
     
     const inventarioGuardado = await this.inventarioRepo.save(inventario);
     
-    // Verificar alertas de stock si es una actualización
     if (stockAnterior > 0) {
-      await this.alertaManager.verificarAlertasStock(
+      await this.notificacionesManager.verificarAlertasStock(
         material_id, 
         sitio_id, 
         inventarioGuardado.stock, 
@@ -68,7 +97,7 @@ export class InventarioService {
     if (!inventario) {
       throw new NotFoundException(`Inventario con ID ${id} no encontrado`);
     }
-    return inventario;
+    return inventario; 
   }
 
   async findByMaterialAndSitio(materialId: number, sitioId: number): Promise<Inventario | null> {
@@ -125,9 +154,8 @@ export class InventarioService {
     
     const inventarioGuardado = await this.inventarioRepo.save(inventario);
     
-    // Verificar alertas de stock
     if (stockAnterior > 0) {
-      await this.alertaManager.verificarAlertasStock(
+      await this.notificacionesManager.verificarAlertasStock(
         materialId, 
         sitioId, 
         inventarioGuardado.stock, 

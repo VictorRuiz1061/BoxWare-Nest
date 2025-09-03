@@ -22,6 +22,7 @@ import { SeedModule } from './seeds/permisos/seed.module';
 
 // Importar módulos comunes
 import { ConfigModule, DatabaseModule } from './common/modules';
+import { NotificacionesManagerModule } from './common/modules/notificaciones-manager.module';
 import { PermissionModule } from './common/guards/permission.module';
 import { GlobalGuardsModule } from './common/guards/global-guards.module';
 import { HttpExceptionFilter } from './common/filters';
@@ -29,7 +30,8 @@ import { TransformInterceptor } from './common/interceptors';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { CaracteristicasModule } from './caracteristicas/caracteristicas.module';
 import { InventarioModule } from './inventario/inventario.module';
-import { AlertasModule } from './alertas/alertas.module';
+
+
 
 @Module({
   imports: [
@@ -64,7 +66,7 @@ import { AlertasModule } from './alertas/alertas.module';
     // InformesModule,
     CaracteristicasModule,
     InventarioModule,
-    AlertasModule,
+    NotificacionesManagerModule,
     SeedModule,
   ],
 

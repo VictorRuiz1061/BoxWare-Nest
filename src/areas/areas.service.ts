@@ -14,15 +14,15 @@ export class AreasService {
   ) {}
 
   async create(createAreaDto: CreateAreaDto) {
-    const { id_sede, ...rest } = createAreaDto;
-    const sede = id_sede
+    const { sede_id, ...rest } = createAreaDto;
+    const sede = sede_id
       ? await this.areaRepository.manager.findOne(Sede, {
-          where: { id_sede: id_sede },
+          where: { id_sede: sede_id },
         })
       : undefined;
 
-    if (id_sede && !sede) {
-      throw new NotFoundException(`Sede with ID ${id_sede} not found`);
+    if (sede_id && !sede) {
+      throw new NotFoundException(`Sede with ID ${sede_id} not found`);
     }
 
     const area = this.areaRepository.create({ 
@@ -54,8 +54,20 @@ export class AreasService {
 
   async update(id: number, updateAreaDto: UpdateAreaDto) {
     const area = await this.findOne(id);
+    const { sede_id, ...rest } = updateAreaDto;
 
-    Object.assign(area, updateAreaDto);
+    if (sede_id) {
+      const sede = await this.areaRepository.manager.findOne(Sede, {
+        where: { id_sede: sede_id },
+      });
+
+      if (!sede) {
+        throw new NotFoundException(`Sede with ID ${sede_id} not found`);
+      }
+      area.sede = sede;
+    }
+
+    Object.assign(area, rest);
     return await this.areaRepository.save(area);
   }
 

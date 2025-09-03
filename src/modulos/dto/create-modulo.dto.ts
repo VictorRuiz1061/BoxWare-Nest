@@ -2,29 +2,28 @@ import { IsNotEmpty, IsString, IsBoolean, IsOptional, IsNumber, ValidateIf } fro
 import { Transform } from 'class-transformer';
 
 export class CreateModuloDto {
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty({ message: 'La ruta no puede estar vacía.' })
+  @IsString({ message: 'La ruta debe ser una cadena de texto.' })
   rutas: string;
 
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty({ message: 'La descripción de la ruta no puede estar vacía.' })
+  @IsString({ message: 'La descripción de la ruta debe ser una cadena de texto.' })
   descripcion_ruta: string;
 
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty({ message: 'El mensaje de cambio no puede estar vacío.' })
+  @IsString({ message: 'El mensaje de cambio debe ser una cadena de texto.' })
   mensaje_cambio: string;
 
-  @IsOptional()
-  @IsString()
+    @IsString({ message: 'La imagen debe ser una cadena de texto.' })
   imagen: string;
 
-  @IsNotEmpty()
-  @IsBoolean()
+    @IsNotEmpty({ message: 'El estado no puede estar vacío.' })
+  @IsBoolean({ message: 'El estado debe ser un valor booleano (verdadero/falso).' })
   @Transform(({ value }) => value === 'true' || value === true || value === 1) // Convierte 1 o "true" a booleano
   estado: boolean;
   
-  @IsNotEmpty()
-  @IsBoolean()
+    @IsNotEmpty({ message: 'El campo es_submenu no puede estar vacío.' })
+  @IsBoolean({ message: 'El campo es_submenu debe ser un valor booleano (verdadero/falso).' })
   @Transform(({ value }) => value === 'true' || value === true || value === 1)
   es_submenu: boolean;
   
@@ -34,8 +33,8 @@ export class CreateModuloDto {
   @Transform(({ value }) => value ? parseInt(value) : null)
   modulo_padre_id: number;
   
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty({ message: 'La fecha de acción no puede estar vacía.' })
+  @IsString({ message: 'La fecha de acción debe ser una cadena de texto.' })
   fecha_accion: string;
 
 }

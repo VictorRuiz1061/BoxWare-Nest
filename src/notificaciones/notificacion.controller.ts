@@ -1,72 +1,72 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
-import { AlertasService } from './alertas.service';
-import { CreateAlertaDto } from './dto/create-alerta.dto';
-import { UpdateAlertaDto } from './dto/update-alerta.dto';
+import { NotificacionesService } from './notificacion.service';
+import { CreateNotificacionDto } from './dto/create-notificacion.dto';
+import { UpdateNotificacionDto } from './dto/update-notificacion.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RequirePermiso } from '../common/decorators/permission.decorator';
 import { PermissionGuard } from '../common/guards/permission.guard';
-import { NivelAlerta } from './entities/alerta.entity';
+import { NivelNotificacion } from './entities/notificacion.entity';
 
-@Controller('alertas')
+@Controller('notificaciones')
 @UseGuards(JwtAuthGuard, PermissionGuard)
-export class AlertasController {
-  constructor(private readonly alertasService: AlertasService) {}
+export class NotificacionesController {
+  constructor(private readonly notificacionesService: NotificacionesService) {}
 
   @Post()
-  @RequirePermiso('alertas', 'crear')
-  create(@Body() createAlertaDto: CreateAlertaDto) {
-    return this.alertasService.create(createAlertaDto);
+  @RequirePermiso('notificaciones', 'crear')
+  create(@Body() createNotificacionDto: CreateNotificacionDto) {
+    return this.notificacionesService.create(createNotificacionDto);
   }
 
   @Get()
-  @RequirePermiso('alertas', 'ver')
+  @RequirePermiso('notificaciones', 'ver')
   findAll(@Query('estado') estado?: string) {
     if (estado === 'pendientes') {
-      return this.alertasService.findPendientes();
+      return this.notificacionesService.findPendientes();
     }
-    return this.alertasService.findAll();
+    return this.notificacionesService.findAll();
   }
 
   @Get('estadisticas')
-  @RequirePermiso('alertas', 'ver')
+  @RequirePermiso('notificaciones', 'ver')
   obtenerEstadisticas() {
-    return this.alertasService.obtenerEstadisticas();
+    return this.notificacionesService.obtenerEstadisticas();
   }
 
   @Get(':id')
-  @RequirePermiso('alertas', 'ver')
+  @RequirePermiso('notificaciones', 'ver')
   findOne(@Param('id') id: string) {
-    return this.alertasService.findOne(+id);
+    return this.notificacionesService.findOne(+id);
   }
 
   @Patch(':id')
-  @RequirePermiso('alertas', 'actualizar')
-  update(@Param('id') id: string, @Body() updateAlertaDto: UpdateAlertaDto) {
-    return this.alertasService.update(+id, updateAlertaDto);
+  @RequirePermiso('notificaciones', 'actualizar')
+  update(@Param('id') id: string, @Body() updateNotificacionDto: UpdateNotificacionDto) {
+    return this.notificacionesService.update(+id, updateNotificacionDto);
   }
 
   @Patch(':id/leer')
-  @RequirePermiso('alertas', 'actualizar')
+  @RequirePermiso('notificaciones', 'actualizar')
   marcarComoLeida(@Param('id') id: string) {
-    return this.alertasService.marcarComoLeida(+id);
+    return this.notificacionesService.marcarComoLeida(+id);
   }
 
   @Patch(':id/archivar')
-  @RequirePermiso('alertas', 'actualizar')
+  @RequirePermiso('notificaciones', 'actualizar')
   marcarComoArchivada(@Param('id') id: string) {
-    return this.alertasService.marcarComoArchivada(+id);
+    return this.notificacionesService.marcarComoArchivada(+id);
   }
 
   @Delete(':id')
-  @RequirePermiso('alertas', 'eliminar')
+  @RequirePermiso('notificaciones', 'eliminar')
   remove(@Param('id') id: string) {
-    return this.alertasService.remove(+id);
+    return this.notificacionesService.remove(+id);
   }
 
-  // Endpoints específicos para crear alertas del sistema
+  // Endpoints específicos para crear notificaciones del sistema
   @Post('stock-bajo')
-  @RequirePermiso('alertas', 'crear')
-  crearAlertaStockBajo(
+  @RequirePermiso('notificaciones', 'crear')
+  crearNotificacionStockBajo(
     @Body() payload: {
       material_id: number;
       sitio_id: number;
@@ -74,7 +74,7 @@ export class AlertasController {
       stock_minimo?: number;
     }
   ) {
-    return this.alertasService.crearAlertaStockBajo(
+    return this.notificacionesService.crearNotificacionStockBajo(
       payload.material_id,
       payload.sitio_id,
       payload.stock_actual,
@@ -83,8 +83,8 @@ export class AlertasController {
   }
 
   @Post('prestamo')
-  @RequirePermiso('alertas', 'crear')
-  crearAlertaPrestamo(
+  @RequirePermiso('notificaciones', 'crear')
+  crearNotificacionPrestamo(
     @Body() payload: {
       material_id: number;
       sitio_id: number;
@@ -92,7 +92,7 @@ export class AlertasController {
       usuario_id: number;
     }
   ) {
-    return this.alertasService.crearAlertaPrestamo(
+    return this.notificacionesService.crearNotificacionPrestamo(
       payload.material_id,
       payload.sitio_id,
       payload.cantidad,
@@ -101,8 +101,8 @@ export class AlertasController {
   }
 
   @Post('devolucion')
-  @RequirePermiso('alertas', 'crear')
-  crearAlertaDevolucion(
+  @RequirePermiso('notificaciones', 'crear')
+  crearNotificacionDevolucion(
     @Body() payload: {
       material_id: number;
       sitio_id: number;
@@ -110,7 +110,7 @@ export class AlertasController {
       usuario_id: number;
     }
   ) {
-    return this.alertasService.crearAlertaDevolucion(
+    return this.notificacionesService.crearNotificacionDevolucion(
       payload.material_id,
       payload.sitio_id,
       payload.cantidad,
@@ -119,8 +119,8 @@ export class AlertasController {
   }
 
   @Post('transferencia')
-  @RequirePermiso('alertas', 'crear')
-  crearAlertaTransferencia(
+  @RequirePermiso('notificaciones', 'crear')
+  crearNotificacionTransferencia(
     @Body() payload: {
       material_id: number;
       sitio_origen_id: number;
@@ -129,7 +129,7 @@ export class AlertasController {
       usuario_id: number;
     }
   ) {
-    return this.alertasService.crearAlertaTransferencia(
+    return this.notificacionesService.crearNotificacionTransferencia(
       payload.material_id,
       payload.sitio_origen_id,
       payload.sitio_destino_id,
@@ -139,8 +139,8 @@ export class AlertasController {
   }
 
   @Post('material-nuevo')
-  @RequirePermiso('alertas', 'crear')
-  crearAlertaMaterialNuevo(
+  @RequirePermiso('notificaciones', 'crear')
+  crearNotificacionMaterialNuevo(
     @Body() payload: {
       material_id: number;
       sitio_id: number;
@@ -148,7 +148,7 @@ export class AlertasController {
       usuario_id: number;
     }
   ) {
-    return this.alertasService.crearAlertaMaterialNuevo(
+    return this.notificacionesService.crearNotificacionMaterialNuevo(
       payload.material_id,
       payload.sitio_id,
       payload.cantidad,
@@ -157,8 +157,8 @@ export class AlertasController {
   }
 
   @Post('movimiento-critico')
-  @RequirePermiso('alertas', 'crear')
-  crearAlertaMovimientoCritico(
+  @RequirePermiso('notificaciones', 'crear')
+  crearNotificacionMovimientoCritico(
     @Body() payload: {
       material_id: number;
       sitio_id: number;
@@ -167,7 +167,7 @@ export class AlertasController {
       usuario_id: number;
     }
   ) {
-    return this.alertasService.crearAlertaMovimientoCritico(
+    return this.notificacionesService.crearNotificacionMovimientoCritico(
       payload.material_id,
       payload.sitio_id,
       payload.tipo_movimiento,
@@ -177,15 +177,15 @@ export class AlertasController {
   }
 
   @Post('sistema')
-  @RequirePermiso('alertas', 'crear')
-  crearAlertaSistema(
+  @RequirePermiso('notificaciones', 'crear')
+  crearNotificacionSistema(
     @Body() payload: {
       titulo: string;
       mensaje: string;
-      nivel?: NivelAlerta;
+      nivel?: NivelNotificacion;
     }
   ) {
-    return this.alertasService.crearAlertaSistema(
+    return this.notificacionesService.crearNotificacionSistema(
       payload.titulo,
       payload.mensaje,
       payload.nivel

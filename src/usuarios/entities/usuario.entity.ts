@@ -17,10 +17,10 @@ export class Usuario {
   @Column()
   edad: number;
 
-  @Column({ length: 60 })
+  @Column({ length: 60 , unique: true })
   cedula: string;
 
-  @Column({ length: 254 })
+  @Column({ length: 254, unique: true })
   email: string;
 
   @Column()
@@ -40,10 +40,10 @@ export class Usuario {
 
   @ManyToOne(() => Rol, rol => rol.usuarios)
   @JoinColumn({ name: 'rol_id' })
-  rol: Rol;
+  rol?: Rol;
 
   @Column({ name: 'rol_id' })
-  rol_id: number;
+  rol_id?: number;
 
   @OneToMany(() => Movimiento, movimiento => movimiento.usuario)
   movimientos: Movimiento[];

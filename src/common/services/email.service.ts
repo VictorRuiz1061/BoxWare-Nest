@@ -2,6 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 
+/**
+ * Servicio para enviar correos electrónicos, específicamente códigos de verificación para recuperación de contraseña.
+ * Utiliza nodemailer para enviar correos electrónicos a través de un proveedor configurado (por defecto Gmail).
+ * 
+ * - Configura y verifica un transporte de correo utilizando credenciales de configuración.
+ * - Genera códigos de verificación de 6 dígitos y los envía por correo electrónico.
+ * - Incluye plantillas HTML para el formato del correo de verificación.
+ */
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);

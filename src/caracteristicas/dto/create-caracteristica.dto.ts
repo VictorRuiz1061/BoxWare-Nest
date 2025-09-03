@@ -1,17 +1,16 @@
-import { IsBoolean, IsInt, IsNotEmpty, IsPositive } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsPositive, IsBoolean } from 'class-validator';
 
 export class CreateCaracteristicaDto {
-  @IsNotEmpty()
-  @IsBoolean()
-  placa_sena: boolean;
+  @IsOptional() // Si quieres que sea opcional
+  @IsBoolean({ message: 'El valor de placa_sena debe ser booleano.' })
+  placa_sena?: boolean;
 
-  @IsNotEmpty()
-  @IsBoolean()
-  descripcion: boolean;
+  @IsOptional()
+    @IsBoolean({ message: 'El valor de descripción debe ser booleano.' })
+  descripcion?: boolean;
 
-  @IsNotEmpty()
-  @IsInt()
-  @IsPositive()
+    @IsNotEmpty({ message: 'El ID del material no puede estar vacío.' })
+  @IsInt({ message: 'El ID del material debe ser un número entero.' })
+  @IsPositive({ message: 'El ID del material debe ser un número positivo.' })
   material_id: number;
-
 }

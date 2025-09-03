@@ -35,6 +35,10 @@ export class Movimiento {
   @JoinColumn({ name: 'usuario_movimiento_id' })
   usuario: Usuario;
 
+  @ManyToOne(() => Usuario, { nullable: true })
+  @JoinColumn({ name: 'usuario_responsable_id' })
+  usuario_responsable: Usuario | null;
+
   @ManyToOne(() => TipoMovimiento, tipo => tipo.movimientos)
   @JoinColumn({ name: 'tipo_movimiento_id' })
   tipo_movimiento_id: TipoMovimiento;

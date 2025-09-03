@@ -2,5 +2,3 @@
 export * from './imagenes.service';
 
 export * from './inventario-manager.service';
-
-export * from './email.service';

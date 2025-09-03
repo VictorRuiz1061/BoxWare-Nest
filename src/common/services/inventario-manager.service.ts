@@ -29,7 +29,6 @@ export class InventarioManagerService {
       await this.inventarioService.actualizarStock(materialId, sitioId, cantidad);
       return true;
     } catch (error) {
-      console.error(`Error al actualizar el inventario: ${error.message}`);
       return false;
     }
   }

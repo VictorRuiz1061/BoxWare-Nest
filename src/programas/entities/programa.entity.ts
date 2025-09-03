@@ -23,9 +23,6 @@ export class Programa {
   @JoinColumn({ name: 'area_id' })
   area: Area;
 
-  @Column()
-  area_id: number;
-
   @OneToMany(() => Ficha, ficha => ficha.programa)
   fichas: Ficha[];
 }

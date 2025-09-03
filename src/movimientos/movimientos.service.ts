@@ -9,7 +9,7 @@ import { TipoMovimiento } from 'src/tipos-movimientos/entities/tipos-movimiento.
 import { Material } from '../materiales/entities/materiale.entity';
 import { Sitio } from '../sitios/entities/sitio.entity';
 import { InventarioManagerService } from '../common/services/inventario-manager.service';
-import { AlertaManagerService } from '../common/services/alerta-manager.service';
+import { NotificacionesManagerService } from '../common/services/notificaciones-manager.service';
 
 @Injectable()
 export class MovimientosService {
@@ -23,7 +23,7 @@ export class MovimientosService {
     @InjectRepository(Material)
     private readonly materialRepo: Repository<Material>,
     private readonly inventarioManager: InventarioManagerService,
-    private readonly alertaManager: AlertaManagerService,
+    private readonly notificacionesManager: NotificacionesManagerService,
     private readonly entityManager: EntityManager
   ) {}
   
@@ -107,6 +107,13 @@ export class MovimientosService {
     const usuario = await this.usuarioRepo.findOneBy({ id_usuario: dto.usuario_id });
     if (!usuario) throw new NotFoundException(`Usuario con ID ${dto.usuario_id} no encontrado`);
 
+    // Validar usuario responsable si se proporciona
+    let usuarioResponsable: Usuario | null = null;
+    if (dto.usuario_responsable_id) {
+      usuarioResponsable = await this.usuarioRepo.findOneBy({ id_usuario: dto.usuario_responsable_id });
+      if (!usuarioResponsable) throw new NotFoundException(`Usuario responsable con ID ${dto.usuario_responsable_id} no encontrado`);
+    }
+
     // Validar tipo de movimiento
     const tipo = await this.tipoMovimientoRepo.findOneBy({ id_tipo_movimiento: dto.tipo_movimiento });
     if (!tipo) throw new NotFoundException(`TipoMovimiento con ID ${dto.tipo_movimiento} no encontrado`);
@@ -134,7 +141,7 @@ export class MovimientosService {
       );
       
       // Crear alerta de transferencia
-      await this.alertaManager.alertarTransferencia(
+      await this.notificacionesManager.alertarTransferencia(
         material.id_material,
         dto.sitio_origen_id,
         dto.sitio_destino_id,
@@ -150,14 +157,14 @@ export class MovimientosService {
       
       // Crear alertas según el tipo de movimiento
       if (this.esMovimientoEntrada(tipo)) {
-        await this.alertaManager.alertarDevolucion(
+        await this.notificacionesManager.alertarDevolucion(
           material.id_material,
           dto.sitio_id,
           dto.cantidad,
           dto.usuario_id
         );
       } else if (this.esMovimientoSalida(tipo)) {
-        await this.alertaManager.alertarPrestamo(
+        await this.notificacionesManager.alertarPrestamo(
           material.id_material,
           dto.sitio_id,
           dto.cantidad,
@@ -170,6 +177,7 @@ export class MovimientosService {
     const nuevo = this.movimientoRepo.create();
     nuevo.estado = dto.estado;
     nuevo.usuario = usuario;
+    nuevo.usuario_responsable = usuarioResponsable;
     nuevo.tipo_movimiento_id = tipo;
     nuevo.material_id = material;
     nuevo.cantidad = dto.cantidad;
@@ -197,14 +205,14 @@ export class MovimientosService {
 
   async findAll(): Promise<Movimiento[]> {
     return this.movimientoRepo.find({ 
-      relations: ['usuario', 'tipo_movimiento_id', 'material_id', 'sitio'] 
+      relations: ['usuario', 'usuario_responsable', 'tipo_movimiento_id', 'material_id', 'sitio'] 
     });
   }
 
   async findOne(id: number): Promise<Movimiento> {
     const movimiento = await this.movimientoRepo.findOne({
       where: { id_movimiento: id },
-      relations: ['usuario', 'tipo_movimiento_id', 'material_id', 'sitio'],
+      relations: ['usuario', 'usuario_responsable', 'tipo_movimiento_id', 'material_id', 'sitio'],
     });
     if (!movimiento) throw new NotFoundException(`Movimiento con ID ${id} no encontrado`);
     return movimiento;
@@ -214,7 +222,7 @@ export class MovimientosService {
     // Obtener el movimiento original con todas sus relaciones
     const movimientoOriginal = await this.movimientoRepo.findOne({
       where: { id_movimiento: id },
-      relations: ['usuario', 'tipo_movimiento_id', 'material_id'],
+      relations: ['usuario', 'usuario_responsable', 'tipo_movimiento_id', 'material_id'],
     });
     
     if (!movimientoOriginal) {
@@ -235,6 +243,17 @@ export class MovimientosService {
       const usuario = await this.usuarioRepo.findOneBy({ id_usuario: dto.usuario_id });
       if (!usuario) throw new NotFoundException(`Usuario con ID ${dto.usuario_id} no encontrado`);
       movimientoOriginal.usuario = usuario;
+    }
+
+    // Actualizar usuario responsable si es necesario
+    if (dto.usuario_responsable_id !== undefined) {
+      if (dto.usuario_responsable_id) {
+        const usuarioResponsable = await this.usuarioRepo.findOneBy({ id_usuario: dto.usuario_responsable_id });
+        if (!usuarioResponsable) throw new NotFoundException(`Usuario responsable con ID ${dto.usuario_responsable_id} no encontrado`);
+        movimientoOriginal.usuario_responsable = usuarioResponsable;
+      } else {
+        movimientoOriginal.usuario_responsable = null;
+      }
     }
 
     // Actualizar tipo de movimiento si es necesario

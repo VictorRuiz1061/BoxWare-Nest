@@ -2,28 +2,29 @@ import { IsNotEmpty, IsNumber, IsString, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateFichaDto {
-  @IsNotEmpty()
-  @IsNumber()
+    @IsNotEmpty({ message: 'El ID de la ficha no puede estar vacío.' })
+  @IsNumber({}, { message: 'El ID de la ficha debe ser un número.' })
   id_ficha: number;
 
-  @IsNotEmpty()
-  @IsBoolean()
+    @IsNotEmpty({ message: 'El estado no puede estar vacío.' })
+  @IsBoolean({ message: 'El estado debe ser un valor booleano (verdadero/falso).' })
   @Transform(({ value }) => value === 'true' || value === true || value === 1) // Convierte 1 o "true" a booleano
   estado: boolean;
 
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty({ message: 'La fecha de creación no puede estar vacía.' })
+  @IsString({ message: 'La fecha de creación debe ser una cadena de texto.' })
   fecha_creacion: string;
 
-  @IsNotEmpty()
-  @IsString()
-  fecha_modificacion: string; 
+    @IsNotEmpty({ message: 'La fecha de modificación no puede estar vacía.' })
+  @IsString({ message: 'La fecha de modificación debe ser una cadena de texto.' })
+  fecha_modificacion: string;
 
-  @IsNotEmpty()
-  @IsNumber()
-  usuario_id: number;
-
-  @IsNotEmpty()
-  @IsNumber()
+    @IsNotEmpty({ message: 'El ID del programa no puede estar vacío.' })
+  @IsNumber({}, { message: 'El ID del programa debe ser un número.' })
   programa_id: number;
+
+  @IsNotEmpty({ message: 'El ID del usuario no puede estar vacío.' })
+  @IsNumber({}, { message: 'El ID del usuario debe ser un número.' })
+  usuario_id: number;
 }
+

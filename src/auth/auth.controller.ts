@@ -1,10 +1,12 @@
-import { Controller, Post, Body, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, BadRequestException, Logger, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUsuarioDto } from '../usuarios/dto/create-usuario.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyCodeDto } from './dto/verify-code.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UsuariosService } from '../usuarios/usuarios.service';
 
 @Controller('')
@@ -65,6 +67,8 @@ export class AuthController {
     }
   }
 
+
+  
   // 👇 ESTOS DEBEN ESTAR DENTRO DE LA CLASE
   @Post('recuperar')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -100,5 +104,36 @@ export class AuthController {
     
     // Si el código es válido, cambiar la contraseña
     return this.authService.resetPassword(verificationResult.token, dto.nuevaContrasena);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('cambiar-contrasena')
+  async changePassword(@Request() req, @Body() dto: ChangePasswordDto) {
+    try {
+      // Validar que las contraseñas coincidan
+      if (dto.nuevaContrasena !== dto.confirmarContrasena) {
+        throw new BadRequestException('La nueva contraseña y la confirmación no coinciden');
+      }
+
+      // Obtener el ID del usuario del token JWT
+      const userId = req.user.id_usuario;
+      
+      // Llamar al servicio para cambiar la contraseña
+      return await this.authService.changePassword(
+        userId,
+        dto.contrasenaActual,
+        dto.nuevaContrasena
+      );
+    } catch (error) {
+      this.logger.error(`Error en cambio de contraseña: ${error.message}`);
+      
+      // Reenviar excepciones específicas
+      if (error instanceof BadRequestException || 
+          error instanceof UnauthorizedException) {
+        throw error;
+      }
+      
+      throw new BadRequestException('Error al cambiar la contraseña: ' + error.message);
+    }
   }
 }

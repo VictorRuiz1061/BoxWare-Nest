@@ -6,8 +6,8 @@ export class CreateMunicipioDto {
   @IsString({ message: 'nombre municipio debe ser un string' })
   nombre_municipio: string;
 
-  @IsNotEmpty()
-  @IsBoolean()
+    @IsNotEmpty({ message: 'El estado no puede estar vacío.' })
+  @IsBoolean({ message: 'El estado debe ser un valor booleano (verdadero/falso).' })
   @Transform(({ value }) => value === 'true' || value === true || value === 1) // Convierte 1 o "true" a booleano
   estado: boolean; 
 

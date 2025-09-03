@@ -15,14 +15,11 @@ export class FileSystemUtil {
     try {
       if (!existsSync(path)) {
         mkdirSync(path, { recursive: true });
-        console.log(`✅ Directorio creado: ${path}`);
         return true;
       } else {
-        console.log(`📁 Directorio ya existe: ${path}`);
         return true;
       }
-    } catch (error) {
-      console.error(`❌ Error al crear directorio ${path}:`, error);
+      } catch (error) {
       return false;
     }
   }
@@ -31,8 +28,7 @@ export class FileSystemUtil {
    * Asegura que todos los directorios de imágenes existan
    * @returns true si todos los directorios se crearon exitosamente
    */
-  static ensureImageDirectoriesExist(): boolean {
-    console.log('🔧 Verificando y creando directorios de imágenes...');
+    static ensureImageDirectoriesExist(): boolean {
     
     const imagesPaths = [
       APP_CONSTANTS.IMAGES_PATHS.MATERIALES,
@@ -63,7 +59,6 @@ export class FileSystemUtil {
       writeFileSync(testFile, 'test');
       return true;
     } catch (error) {
-      console.error(`❌ Error de permisos de escritura en ${directory}:`, error);
       return false;
     }
   }

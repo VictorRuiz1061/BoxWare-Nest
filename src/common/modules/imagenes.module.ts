@@ -25,11 +25,6 @@ export class ImagenesModule {
     // Asegurar que el directorio de destino exista
     const directoryCreated = FileSystemUtil.ensureDirectoryExists(imagenesConfig.destinationPath);
     
-    if (!directoryCreated) {
-      console.error(`❌ Error: No se pudo crear el directorio ${imagenesConfig.destinationPath}`);
-    } else {
-      console.log(`✅ Directorio de imágenes listo: ${imagenesConfig.destinationPath}`);
-    }
     
     // Crear instancia del servicio para configurar Multer
     const imagenesService = new ImagenesService();

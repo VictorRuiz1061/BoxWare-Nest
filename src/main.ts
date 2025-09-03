@@ -17,9 +17,7 @@ async function bootstrap() {
   const directoriesCreated = FileSystemUtil.ensureImageDirectoriesExist();
   
   if (!directoriesCreated) {
-    console.error('❌ Error: No se pudieron crear todos los directorios de imágenes');
   } else {
-    console.log('✅ Todos los directorios de imágenes están listos');
   }
 
   // Configurar rutas estáticas para archivos

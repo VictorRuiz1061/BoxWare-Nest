@@ -3,13 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 /**
- * Módulo para la configuración de la base de datos
+ * Mu00f3dulo para la configuraciu00f3n de la base de datos
  */
 @Module({})
 export class DatabaseModule {
   /**
-   * Registra el módulo de base de datos con configuración desde variables de entorno
-   * @returns Módulo dinámico configurado
+   * Registra el mu00f3dulo de base de datos con configuraciu00f3n desde variables de entorno
+   * @returns Mu00f3dulo dinu00e1mico configurado
    */
   static register(): DynamicModule {
     return {
@@ -24,9 +24,10 @@ export class DatabaseModule {
             port: configService.get('DB_PORT'),
             username: configService.get('DB_USERNAME'),
             password: configService.get('DB_PASSWORD'),
-            database: configService.get('DB_DATABASE'),
+            database: configService.get('DB_NAME'),
             entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
-            synchronize: true
+            migrations: [__dirname + '/../../migrations/*{.ts,.js}'],
+            synchronize: false
           }),
         }),
       ],

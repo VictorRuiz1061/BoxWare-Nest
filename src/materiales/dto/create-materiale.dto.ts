@@ -2,46 +2,46 @@ import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } f
 import { Type } from "class-transformer";
 
 export class CreateMaterialeDto {
-    @IsNotEmpty()
-    @IsString()
+        @IsNotEmpty({ message: 'El código SENA no puede estar vacío.' })
+    @IsString({ message: 'El código SENA debe ser una cadena de texto.' })
     codigo_sena: string;
 
-    @IsNotEmpty()
-    @IsString()
+        @IsNotEmpty({ message: 'El nombre del material no puede estar vacío.' })
+    @IsString({ message: 'El nombre del material debe ser una cadena de texto.' })
     nombre_material: string;
 
-    @IsNotEmpty()
-    @IsString()
+        @IsNotEmpty({ message: 'La descripción del material no puede estar vacía.' })
+    @IsString({ message: 'La descripción del material debe ser una cadena de texto.' })
     descripcion_material: string;
 
-    @IsNotEmpty()
-    @IsString()
+        @IsNotEmpty({ message: 'La unidad de medida no puede estar vacía.' })
+    @IsString({ message: 'La unidad de medida debe ser una cadena de texto.' })
     unidad_medida: string;
 
     @IsOptional()
-    @IsDateString()
+    @IsDateString({}, { message: 'La fecha de vencimiento debe ser una cadena de fecha válida.' })
     fecha_vencimiento: string;
 
-    @IsNotEmpty()
-    @IsBoolean()
+        @IsNotEmpty({ message: 'El producto perecedero no puede estar vacío.' })
+    @IsBoolean({ message: 'El producto perecedero debe ser un valor booleano.' })
     @Type(() => Boolean)
     producto_perecedero: boolean;
 
-    @IsNotEmpty()
-    @IsBoolean()
+        @IsNotEmpty({ message: 'El estado no puede estar vacío.' })
+    @IsBoolean({ message: 'El estado debe ser un valor booleano.' })
     @Type(() => Boolean)
     estado: boolean;
 
-    @IsOptional()
-    @IsString()
+        @IsOptional()
+    @IsString({ message: 'La imagen debe ser una cadena de texto.' })
     imagen?: string;
 
-    @IsNotEmpty()
-    @IsNumber()
+        @IsNotEmpty({ message: 'El ID de la categoría no puede estar vacío.' })
+    @IsNumber({}, { message: 'El ID de la categoría debe ser un número.' })
     categoria_id: number;
 
-    @IsNotEmpty()
-    @IsNumber()
+        @IsNotEmpty({ message: 'El ID del tipo de material no puede estar vacío.' })
+    @IsNumber({}, { message: 'El ID del tipo de material debe ser un número.' })
     @Type(() => Number)
     tipo_material_id: number;
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -18,22 +18,9 @@ export class UsuariosService {
   ) {}
 
   async create(dto: CreateUsuarioDto): Promise<Usuario> {
-    const rol = await this.rolRepo.findOneBy({ id_rol: dto.rol_id });
-    if (!rol) {
-      throw new NotFoundException(`Rol con ID ${dto.rol_id} no encontrado`);
-    }
-
-    // 🔍 Verifica si ya existe por cédula
-    const existeCedula = await this.usuarioRepo.findOneBy({ cedula: dto.cedula });
-    if (existeCedula) {
-      throw new BadRequestException(`Ya existe un usuario con la cédula ${dto.cedula}`);
-    }
-
-    // 🔍 Verifica si ya existe por email
-    const existeEmail = await this.usuarioRepo.findOneBy({ email: dto.email });
-    if (existeEmail) {
-      throw new BadRequestException(`Ya existe un usuario con el correo ${dto.email}`);
-    }
+    const rolId = Array.isArray(dto.rol_id) ? dto.rol_id[0] : dto.rol_id;
+    const rol = await this.rolRepo.findOneBy({ id_rol: rolId });
+    if (!rol) throw new NotFoundException(`Rol con ID ${dto.rol_id} no encontrado`);
 
     let hashedPassword = dto.contrasena;
     if (dto.contrasena) {
@@ -76,10 +63,9 @@ export class UsuariosService {
     const { rol_id, ...updateData } = dto;
 
     if (rol_id) {
-      const rol = await this.rolRepo.findOneBy({ id_rol: rol_id });
-      if (!rol) {
-        throw new NotFoundException(`Rol con ID ${rol_id} no encontrado`);
-      }
+      const rolId = Array.isArray(rol_id) ? rol_id[0] : rol_id;
+      const rol = await this.rolRepo.findOneBy({ id_rol: rolId });
+      if (!rol) throw new NotFoundException(`Rol con ID ${rolId} no encontrado`);
       usuario.rol = rol;
     }
 
@@ -94,15 +80,7 @@ export class UsuariosService {
 
   async remove(id: number | string): Promise<boolean> {
     const usuario = await this.findOne(id);
-    await this.usuarioRepo.remove(usuario);
+    await this.usuarioRepo.save(usuario);
     return true;
-  }
-
-  async findByCedula(cedula: string): Promise<Usuario | null> {
-    return this.usuarioRepo.findOneBy({ cedula });
-  }
-
-  async findByEmail(email: string): Promise<Usuario | null> {
-    return this.usuarioRepo.findOneBy({ email });
   }
 }

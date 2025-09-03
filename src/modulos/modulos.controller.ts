@@ -24,7 +24,6 @@ export class ModulosController {
       if (file) {
         // La ruta debe ser accesible desde el navegador
         createModuloDto.imagen = `/public/img_modulos/${file.filename}`;
-        console.log('Imagen de módulo guardada en:', file.path);
       }
       
       // Crear el módulo con sus relaciones

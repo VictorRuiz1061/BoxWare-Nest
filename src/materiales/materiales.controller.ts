@@ -32,6 +32,7 @@ export class MaterialesController {
     @Body() createMaterialeDto: CreateMaterialeDto,
   ) {
     try {
+      // Si hay un archivo, usar la URL generada
       if (file) {
         const imageUrl = this.imagenesService.getImageUrl(
           file.filename,
@@ -39,10 +40,62 @@ export class MaterialesController {
         );
         createMaterialeDto.imagen = imageUrl;
       }
-
+      
+      // Si no hay archivo pero hay una URL de imagen en el DTO, usarla
+      // Esto permite que el frontend envíe directamente una URL de imagen
+      // que ya fue subida previamente con el endpoint upload-image
+      
+      console.log('Creando material con datos (antes de transformación):', JSON.stringify(createMaterialeDto));
+      
+      // Asegurar que los tipos sean correctos
+      if (typeof createMaterialeDto.categoria_id === 'string') {
+        createMaterialeDto.categoria_id = Number(createMaterialeDto.categoria_id);
+      }
+      
+      if (typeof createMaterialeDto.tipo_material_id === 'string') {
+        createMaterialeDto.tipo_material_id = Number(createMaterialeDto.tipo_material_id);
+      }
+      
+      if (typeof createMaterialeDto.producto_perecedero === 'string') {
+        createMaterialeDto.producto_perecedero = createMaterialeDto.producto_perecedero === 'true';
+      }
+      
+      if (typeof createMaterialeDto.estado === 'string') {
+        createMaterialeDto.estado = createMaterialeDto.estado === 'true';
+      }
+      
+      console.log('Creando material con datos (después de transformación):', JSON.stringify(createMaterialeDto));
+      
+      // Validar que todos los campos requeridos estén presentes
+      const requiredFields = ['codigo_sena', 'nombre_material', 'descripcion_material', 
+                             'unidad_medida', 'categoria_id', 'tipo_material_id'];
+      
+      for (const field of requiredFields) {
+        if (createMaterialeDto[field] === undefined || createMaterialeDto[field] === null) {
+          console.error(`Campo requerido faltante: ${field}`);
+          throw new BadRequestException(`Campo requerido faltante: ${field}`);
+        }
+      }
+      
       return await this.materialesService.create(createMaterialeDto);
     } catch (error) {
-      throw new BadRequestException('Error al crear el material: ' + error.message);
+      console.error('Error al crear material:', JSON.stringify(error));
+      
+      // Mostrar el mensaje de error completo
+      if (error instanceof BadRequestException) {
+        throw error;
+      } else if (error.response) {
+        console.error('Error detallado:', JSON.stringify(error.response));
+        throw new BadRequestException({
+          message: 'Error al crear el material',
+          error: error.response
+        });
+      } else {
+        throw new BadRequestException({
+          message: 'Error al crear el material',
+          error: error.message || error
+        });
+      }
     }
   }
 
@@ -86,6 +139,32 @@ export class MaterialesController {
   @RequirePermiso('materiales', 'actualizar')
   remove(@Param('id') id: string) {
     return this.materialesService.remove(+id);
+  }
+
+  /**
+   * Endpoint específico para subir imágenes de materiales
+   * @param file Archivo de imagen
+   * @returns URL de la imagen subida
+   */
+  @Post('upload-image')
+  @RequirePermiso('materiales', 'crear')
+  @UploadFile('imagen')
+  @UseInterceptors(FileResponseInterceptor)
+  async uploadImage(@UploadedFile(new FileValidationPipe()) file: Express.Multer.File) {
+    try {
+      if (!file) {
+        throw new BadRequestException('No se ha proporcionado ningún archivo');
+      }
+
+      const imageUrl = this.imagenesService.getImageUrl(
+        file.filename,
+        APP_CONSTANTS.IMAGES_BASE_URLS.MATERIALES
+      );
+
+      return { imageUrl };
+    } catch (error) {
+      throw new BadRequestException('Error al subir la imagen: ' + error.message);
+    }
   }
 
   /**

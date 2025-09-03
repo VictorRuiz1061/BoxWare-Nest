@@ -30,18 +30,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @throws UnauthorizedException si el usuario no existe
    */
   async validate(payload: any) {
-    console.log('JWT Strategy - Validando token:', payload);
     
     // Buscar el usuario en la base de datos para asegurar que sigue existiendo
     const usuario = await this.usuarioRepository.findOne({
       where: { id_usuario: payload.sub },
       relations: ['rol']
-    });
-    
-    console.log('JWT Strategy - Usuario encontrado:', {
-      id: usuario?.id_usuario,
-      email: usuario?.email,
-      rol: usuario?.rol?.nombre_rol
     });
     
     // Si el usuario no existe, lanzar excepción

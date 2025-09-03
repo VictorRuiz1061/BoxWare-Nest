@@ -3,24 +3,24 @@ import { Transform } from 'class-transformer';
 
 export class CreateCategoriaElementoDto {
   @IsNotEmpty({ message: 'El campo codigo_upsena es obligatorio' })
-  @IsString()
+    @IsString({ message: 'El código UNPSC debe ser una cadena de texto.' })
   codigo_unpsc: string;
 
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty({ message: 'El nombre de la categoría no puede estar vacío.' })
+  @IsString({ message: 'El nombre de la categoría debe ser una cadena de texto.' })
   nombre_categoria: string;
 
-  @IsNotEmpty()
-  @IsBoolean()
+    @IsNotEmpty({ message: 'El estado no puede estar vacío.' })
+  @IsBoolean({ message: 'El estado debe ser un valor booleano (verdadero/falso).' })
   @Transform(({ value }) => value === 'true' || value === true || value === 1) // Convierte 1 o "true" a booleano
   estado: boolean;
 
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty({ message: 'La fecha de creación no puede estar vacía.' })
+  @IsString({ message: 'La fecha de creación debe ser una cadena de texto.' })
   fecha_creacion: string;
 
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty({ message: 'La fecha de modificación no puede estar vacía.' })
+  @IsString({ message: 'La fecha de modificación debe ser una cadena de texto.' })
   fecha_modificacion: string;
 }
  

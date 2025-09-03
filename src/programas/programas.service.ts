@@ -56,8 +56,7 @@ export class ProgramasService {
   async update(id: number, updateProgramaDto: UpdateProgramaDto) {
     const programa = await this.findOne(id);
     const { area_id, ...rest } = updateProgramaDto;
-    
-    // Si se proporciona un nuevo area_id, actualizar la relación
+
     if (area_id) {
       const area = await this.programaRepository.manager.findOne(Area, {
         where: { id_area: area_id },
@@ -66,14 +65,10 @@ export class ProgramasService {
       if (!area) {
         throw new NotFoundException(`Area with ID ${area_id} not found`);
       }
-
       programa.area = area;
-      programa.area_id = area_id;
     }
-    
-    // Actualizar el resto de propiedades
+
     Object.assign(programa, rest);
-    
     return await this.programaRepository.save(programa);
   }
 

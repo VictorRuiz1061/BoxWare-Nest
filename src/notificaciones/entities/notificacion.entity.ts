@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Usuario } from '../../usuarios/entities/usuario.entity';
 
-export enum TipoAlerta {
+export enum TipoNotificacion {
   STOCK_BAJO = 'stock_bajo',
   PRESTAMO = 'prestamo',
   DEVOLUCION = 'devolucion',
@@ -11,44 +11,44 @@ export enum TipoAlerta {
   SISTEMA = 'sistema'
 }
 
-export enum NivelAlerta {
+export enum NivelNotificacion {
   INFO = 'info',
   WARNING = 'warning',
   ERROR = 'error',
   CRITICAL = 'critical'
 }
 
-export enum EstadoAlerta {
+export enum EstadoNotificacion {
   PENDIENTE = 'pendiente',
   LEIDA = 'leida',
   ARCHIVADA = 'archivada'
 }
 
-@Entity('alertas')
-export class Alerta {
+@Entity('notificaciones')
+export class Notificacion {
   @PrimaryGeneratedColumn()
-  id_alerta: number;
+  id_notificacion: number;
 
   @Column({
     type: 'enum',
-    enum: TipoAlerta,
+    enum: TipoNotificacion,
     nullable: false
   })
-  tipo: TipoAlerta;
+  tipo: TipoNotificacion;
 
   @Column({
     type: 'enum',
-    enum: NivelAlerta,
-    default: NivelAlerta.INFO
+    enum: NivelNotificacion,
+    default: NivelNotificacion.INFO
   })
-  nivel: NivelAlerta;
+  nivel: NivelNotificacion;
 
   @Column({
     type: 'enum',
-    enum: EstadoAlerta,
-    default: EstadoAlerta.PENDIENTE
+    enum: EstadoNotificacion,
+    default: EstadoNotificacion.PENDIENTE
   })
-  estado: EstadoAlerta;
+  estado: EstadoNotificacion;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
   titulo: string;
